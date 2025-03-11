@@ -1006,25 +1006,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to send message to OpenRouter API
     async function sendToOpenRouter(message) {
-        // Default API key - this should be your actual default OpenRouter API key
-        const defaultApiKey = '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';
-        
-        // Get API key from localStorage or use default
-        const apiKey = localStorage.getItem('openrouter_api_key') || defaultApiKey;
-        
-        // If this is the first time using the app, save the default key to localStorage
-        if (!localStorage.getItem('openrouter_api_key')) {
-            localStorage.setItem('openrouter_api_key', defaultApiKey);
-        }
-        
         try {
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            const response = await fetch('/api/openrouter-proxy', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': window.location.href,
-                    'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     model: 'google/gemini-2.0-pro-exp-02-05:free', // Using Gemini Pro model via OpenRouter
@@ -1062,100 +1048,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Invalid response format from API');
             }
         } catch (error) {
-            console.error('Error calling OpenRouter API:', error);
+            console.error('Error calling API:', error);
             throw error;
         }
     }
     
     // Function to show API key input prompt
     function showApiKeyPrompt() {
-        console.log("Showing API key prompt");
-        
-        // Create the API key prompt overlay
+        // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'api-key-overlay';
         
-        // Create the prompt container
+        // Create prompt container
         const promptContainer = document.createElement('div');
         promptContainer.className = 'api-key-prompt';
         
-        // Set RTL direction for Arabic
+        // Set RTL direction if language is Arabic
         if (currentLanguage === 'ar') {
-            promptContainer.setAttribute('dir', 'rtl');
+            promptContainer.style.direction = 'rtl';
             promptContainer.setAttribute('lang', 'ar');
         }
         
         // Create the prompt content
         const title = document.createElement('h2');
-        title.textContent = currentLanguage === 'ar' ? 'أدخل مفتاح API الخاص بك' : 'Enter your API Key';
+        title.textContent = currentLanguage === 'ar' ? 'إشعار النظام' : 'System Notice';
         
         const description = document.createElement('p');
-        description.textContent = currentLanguage === 'ar' 
-            ? 'يرجى إدخال مفتاح OpenRouter API الخاص بك للمتابعة. سيتم تخزينه محليًا في متصفحك فقط.' 
-            : 'Please enter your OpenRouter API key to continue. It will be stored locally in your browser only.';
-        
-        const input = document.createElement('input');
-        input.type = 'password';
-        input.placeholder = currentLanguage === 'ar' ? 'مفتاح API' : 'API Key';
-        input.value = localStorage.getItem('openrouter_api_key') || '';
+        description.innerHTML = currentLanguage === 'ar' 
+            ? 'تم تكوين واجهة ALIEN AI لاستخدام مفتاح API على الخادم. لا تحتاج إلى مفتاح API الخاص بك للاستخدام.' 
+            : 'The ALIEN AI interface is now configured to use a server-side API key. You no longer need your own API key to use it.';
         
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'button-container';
         
-        const saveButton = document.createElement('button');
-        saveButton.textContent = currentLanguage === 'ar' ? 'حفظ' : 'Save';
-        saveButton.className = 'save-button';
+        const okButton = document.createElement('button');
+        okButton.textContent = currentLanguage === 'ar' ? 'حسنًا' : 'OK';
+        okButton.className = 'save-button';
         
-        const cancelButton = document.createElement('button');
-        cancelButton.textContent = currentLanguage === 'ar' ? 'إلغاء' : 'Cancel';
-        cancelButton.className = 'cancel-button';
-        
-        // Add event listeners
-        saveButton.addEventListener('click', () => {
-            const apiKey = input.value.trim();
-            if (apiKey) {
-                localStorage.setItem('openrouter_api_key', apiKey);
-                document.body.removeChild(overlay);
-                
-                // Add confirmation message
-                const confirmMessage = currentLanguage === 'ar' 
-                    ? 'تم حفظ مفتاح API بنجاح!' 
-                    : 'API key saved successfully!';
-                addMessage(confirmMessage, 'ai');
-            }
-        });
-        
-        cancelButton.addEventListener('click', () => {
+        // Add event listener
+        okButton.addEventListener('click', () => {
             document.body.removeChild(overlay);
+            
+            // Add confirmation message
+            const confirmMessage = currentLanguage === 'ar' 
+                ? 'تم تكوين النظام بنجاح. يمكنك متابعة استخدام ALIEN AI دون الحاجة إلى مفتاح API الخاص بك.' 
+                : 'System configured successfully. You can continue using ALIEN AI without needing your own API key.';
+            addMessage(confirmMessage, 'ai');
         });
         
         // Assemble the prompt
-        buttonContainer.appendChild(saveButton);
-        buttonContainer.appendChild(cancelButton);
+        buttonContainer.appendChild(okButton);
         
         promptContainer.appendChild(title);
         promptContainer.appendChild(description);
-        promptContainer.appendChild(input);
         promptContainer.appendChild(buttonContainer);
         
         overlay.appendChild(promptContainer);
         document.body.appendChild(overlay);
-        
-        // Focus the input
-        setTimeout(() => {
-            input.focus();
-        }, 100);
     }
 
     // Function to explicitly handle API key changes
     function changeApiKey() {
-        // First display the message
-        addMessage("API KEY CHANGE PROTOCOL INITIATED. ENTER YOUR NEW OPENROUTER API KEY IN THE PROMPT WINDOW THAT WILL APPEAR.", 'ai');
-        
-        // Then show the API key prompt after a short delay to ensure the message is seen
-        setTimeout(() => {
-            showApiKeyPrompt();
-        }, 500);
+        // Display a message explaining server-side key is now used
+        addMessage("API KEY CHANGE REQUEST DETECTED. THIS SYSTEM NOW USES A SERVER-SIDE API KEY. YOU DO NOT NEED TO PROVIDE YOUR OWN API KEY.", 'ai');
     }
 
     // Function to detect if text contains Arabic characters - improve with more comprehensive detection
@@ -1204,64 +1159,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Enhanced AI-assisted search function
     async function determineQueryRelevance(query, knowledgeTopics) {
-        // Use a scaled-down version of the API call to determine relevance
         try {
-            const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-            const apiKey = localStorage.getItem('openrouter_api_key');
-            
-            if (!apiKey) return { isRelevant: false, certainty: 0, explanation: 'No API key available' };
-            
-            const prompt = `You are a topic-matching assistant for a knowledge base system.
-            
-Knowledge Base Topics: ${knowledgeTopics.join(', ')}
-
-User Query: "${query}"
-
-Is this query specifically asking about any of the knowledge base topics listed above? 
-Consider that general programming questions about C++ that don't specifically relate to our knowledge base topics should be answered using general knowledge.
-
-Reply with a JSON object only:
-{
-  "isRelevant": true/false,
-  "certainty": 0-100 (percentage of certainty),
-  "matchedTopic": "topic name from the list or null if none",
-  "explanation": "brief explanation of why this is or isn't relevant to our knowledge base"
-}`;
-
-            const response = await fetch(apiUrl, {
+            // Call our Netlify function proxy for query relevance
+            const response = await fetch('/api/query-relevance-proxy', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: "openai/gpt-3.5-turbo",
-                    messages: [{ role: "user", content: prompt }],
-                    temperature: 0.1,
-                    max_tokens: 150
+                    query,
+                    knowledgeTopics
                 })
             });
 
-            const data = await response.json();
-            
-            if (data.error) {
-                console.error('Error in relevance check:', data.error);
-                return { isRelevant: false, certainty: 0, explanation: 'Error in API call' };
+            if (!response.ok) {
+                throw new Error('Failed to get relevance assessment');
             }
-            
-            const aiResponse = data.choices[0].message.content.trim();
-            try {
-                // Extract the JSON from the response
-                const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-                const jsonStr = jsonMatch ? jsonMatch[0] : '{}';
-                const result = JSON.parse(jsonStr);
-                console.log('AI Relevance Check:', result);
-                return result;
-            } catch (e) {
-                console.error('Error parsing AI response:', e, aiResponse);
-                return { isRelevant: false, certainty: 0, explanation: 'Failed to parse AI response' };
-            }
+
+            const result = await response.json();
+            console.log('AI Relevance Check:', result);
+            return result;
         } catch (error) {
             console.error('Error determining query relevance:', error);
             return { isRelevant: false, certainty: 0, explanation: 'Error in API call' };
