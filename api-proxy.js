@@ -57,7 +57,7 @@
                 try {
                     console.log('API Proxy: Attempting to use Netlify function');
                     // Call the Netlify function instead of OpenRouter directly
-                    const response = await fetch('/.netlify/functions/openrouter-proxy', {
+                    const response = await fetch('/api/openrouter-proxy', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
