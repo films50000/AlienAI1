@@ -21,6 +21,36 @@ function createAlienTransition() {
     }
 }
 
+// Fallback implementation of switchMode in case script.js doesn't load properly
+if (typeof window.switchMode !== 'function') {
+    window.switchMode = function(mode) {
+        console.log("Using fallback switchMode function for mode:", mode);
+        
+        // Remove current mode classes
+        document.body.classList.remove('alien-mode', 'einstein-mode', 'newton-mode');
+        
+        // Add the new mode class
+        document.body.classList.add(mode + '-mode');
+        
+        // Update UI based on the selected mode
+        const modelIndicator = document.querySelector('.model-indicator');
+        if (modelIndicator) {
+            if (mode === 'alien') {
+                modelIndicator.innerHTML = 'ALIEN AI';
+            } else if (mode === 'einstein') {
+                modelIndicator.innerHTML = 'EINSTEIN MODE';
+            } else if (mode === 'newton') {
+                modelIndicator.innerHTML = 'NEWTON MODE';
+            }
+        }
+        
+        // If switching to alien mode, play the transition sound
+        if (mode === 'alien') {
+            createAlienTransition();
+        }
+    };
+}
+
 // When the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Check if switchMode exists
@@ -39,6 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     } else {
-        console.log("switchMode function not found");
+        console.log("switchMode function not found, using fallback");
     }
 }); 
