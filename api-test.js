@@ -66,9 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('API key not found in localStorage');
             }
             
-            // Make sure the API key is properly formatted without "Bearer " prefix
-            if (apiKey.startsWith('Bearer ')) {
-                apiKey = apiKey.substring(7);
+            // Make sure the API key is properly formatted WITH "Bearer " prefix for OpenRouter
+            if (!apiKey.startsWith('Bearer ')) {
+                apiKey = 'Bearer ' + apiKey;
             }
             
             // Try to make a simple request to OpenRouter
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
+                    'Authorization': apiKey,
                     'HTTP-Referer': 'https://aliensai.netlify.app/',
                     'X-Title': 'ALIEN CODE INTERFACE' // Simplified title
                 },
@@ -157,9 +157,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('API key not found in localStorage');
             }
             
-            // Make sure the API key is properly formatted without "Bearer " prefix
-            if (apiKey.startsWith('Bearer ')) {
-                apiKey = apiKey.substring(7);
+            // Make sure the API key is properly formatted WITH "Bearer " prefix for OpenRouter
+            if (!apiKey.startsWith('Bearer ')) {
+                apiKey = 'Bearer ' + apiKey;
             }
             
             // Try to make a simple request to OpenRouter
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
+                    'Authorization': apiKey,
                     'HTTP-Referer': 'https://aliensai.netlify.app/',
                     'X-Title': 'ALIEN CODE INTERFACE' // Simplified title
                 },

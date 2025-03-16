@@ -25,9 +25,9 @@
                         throw new Error('API key not found. Please set your OpenRouter API key.');
                     }
                     
-                    // Format the API key properly - ensure it doesn't have "Bearer " in front
-                    if (apiKey.startsWith('Bearer ')) {
-                        apiKey = apiKey.substring(7);
+                    // Format the API key properly - IMPORTANT: OpenRouter requires the "Bearer " prefix
+                    if (!apiKey.startsWith('Bearer ')) {
+                        apiKey = 'Bearer ' + apiKey;
                     }
                     
                     // Define system prompts for different modes
@@ -54,7 +54,12 @@
                     const typingIndicator = document.getElementById('typing-indicator');
                     if (typingIndicator) typingIndicator.style.display = 'block';
                     
-                    console.log('Making direct API call to OpenRouter with Gemini model');
+                    console.log('Making direct API call to OpenRouter with API key headers:', JSON.stringify({
+                        'Content-Type': 'application/json',
+                        'Authorization': apiKey.substring(0, 15) + '...',
+                        'HTTP-Referer': 'https://aliensai.netlify.app/',
+                        'X-Title': 'ALIEN CODE INTERFACE'
+                    }));
                     
                     // Try with Gemini first since that was requested
                     try {
@@ -63,7 +68,7 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${apiKey}`,
+                                'Authorization': apiKey,
                                 'HTTP-Referer': 'https://aliensai.netlify.app/',
                                 'X-Title': 'ALIEN CODE INTERFACE'
                             },
@@ -117,7 +122,7 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${apiKey}`,
+                                'Authorization': apiKey,
                                 'HTTP-Referer': 'https://aliensai.netlify.app/',
                                 'X-Title': 'ALIEN CODE INTERFACE'
                             },
@@ -168,7 +173,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`,
+                            'Authorization': apiKey,
                             'HTTP-Referer': 'https://aliensai.netlify.app/',
                             'X-Title': 'ALIEN CODE INTERFACE'
                         },

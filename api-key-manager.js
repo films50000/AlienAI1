@@ -70,19 +70,30 @@ document.addEventListener('DOMContentLoaded', function() {
         apiKeyStatusEl.style.color = '#0f0';
         
         try {
+            // Format the API key with Bearer prefix for testing
+            let formattedApiKey = apiKey;
+            if (!formattedApiKey.startsWith('Bearer ')) {
+                formattedApiKey = 'Bearer ' + formattedApiKey;
+            }
+            
             // Test the API key with a simple request
             const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
+                    'Authorization': formattedApiKey,
                     'HTTP-Referer': 'https://aliensai.netlify.app/',
                     'X-Title': 'ALIEN CODE INTERFACE'
                 }
             });
             
             if (response.ok) {
-                // Save the API key to localStorage
-                localStorage.setItem('openrouter_api_key', apiKey);
+                // Save the API key to localStorage without the Bearer prefix (our code adds it)
+                let storageApiKey = apiKey;
+                if (storageApiKey.startsWith('Bearer ')) {
+                    storageApiKey = storageApiKey.substring(7).trim();
+                }
+                
+                localStorage.setItem('openrouter_api_key', storageApiKey);
                 
                 apiKeyStatusEl.textContent = 'API key saved successfully! Reloading page...';
                 apiKeyStatusEl.style.color = '#0f0';
@@ -154,11 +165,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
+            // Format API key with Bearer prefix for validation
+            let formattedApiKey = apiKey;
+            if (!formattedApiKey.startsWith('Bearer ')) {
+                formattedApiKey = 'Bearer ' + formattedApiKey;
+            }
+            
             // Test if the key is valid (just a GET request to check, no tokens used)
             const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
+                    'Authorization': formattedApiKey,
                     'HTTP-Referer': 'https://aliensai.netlify.app/',
                     'X-Title': 'ALIEN CODE INTERFACE'
                 }
@@ -182,15 +199,14 @@ document.addEventListener('DOMContentLoaded', function() {
     window.formatApiKey = function(apiKey) {
         if (!apiKey) return null;
         
-        // Make sure the API key is properly formatted
-        // Some API keys need to be prefixed with 'Bearer ' but OpenRouter already accepts the format directly
+        // Make sure the API key is properly formatted with Bearer prefix
         if (apiKey.startsWith('Bearer ')) {
             return apiKey;
         } else if (apiKey.startsWith('sk-or-')) {
-            return apiKey; // This is the correct format for OpenRouter
+            return 'Bearer ' + apiKey; // Add Bearer prefix for OpenRouter
         } else {
             console.warn('API key has unexpected format');
-            return apiKey; // Return as-is and hope for the best
+            return 'Bearer ' + apiKey; // Add Bearer prefix anyway
         }
     };
 }); 
