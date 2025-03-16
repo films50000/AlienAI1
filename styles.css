@@ -1,0 +1,2827 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Alien-inspired green color palette */
+    --bg-color: #050c08;
+    --surface-color: #0a1a10;
+    --primary-color: #00e676;
+    --primary-light: #5dfa9a;
+    --primary-dark: #00c853;
+    --secondary-color: #69f0ae;
+    --accent-color: #18ffff;
+    --text-color: #e3f2e7;
+    --text-secondary: #aebfb4;
+    --border-radius: 2px;
+    --transition-speed: 0.3s;
+    --message-radius: 2px;
+    --glow-color: rgba(0, 230, 118, 0.2);
+    --scanner-color: rgba(0, 230, 118, 0.08);
+    --grid-color: rgba(0, 230, 118, 0.05);
+    /* RTL support variables */
+    --text-align: left;
+    --direction: ltr;
+}
+
+/* RTL (Arabic) support */
+[dir="rtl"] {
+    --text-align: right;
+    --direction: rtl;
+}
+
+/* Add Arabic font support */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 16px;
+    background-image: 
+        radial-gradient(circle at 50% 50%, var(--scanner-color) 0%, transparent 60%),
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 100% 100%, 20px 20px, 20px 20px;
+    background-position: 0 0, 0 0, 0 0;
+    font-family: 'Inter', 'Cairo', sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.model-indicator {
+    position: absolute;
+    top: 8px; /* Slightly reduced from 12px */
+    left: 20px;
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-family: 'Orbitron', monospace;
+    color: var(--primary-color);
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.9;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    z-index: 10;
+    background-color: rgba(0, 230, 118, 0.05);
+    margin-bottom: 10px;
+}
+
+.model-indicator::before {
+    content: "[";
+    margin-right: 4px;
+}
+
+.model-indicator::after {
+    content: "]";
+    margin-left: 4px;
+}
+
+.model-indicator:hover {
+    opacity: 1;
+    background-color: rgba(0, 230, 118, 0.1);
+}
+
+.model-indicator::after {
+    content: "Click to change API key";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+    padding: 5px 10px;
+    border-radius: var(--border-radius);
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    border: 1px solid var(--primary-color);
+    z-index: 1000;
+}
+
+.model-indicator:hover::after {
+    opacity: 1;
+}
+
+.gemini-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 0;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.alien-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 0;
+    margin-right: 8px;
+    animation: pulse 1.5s infinite;
+    clip-path: polygon(
+        50% 0%, 
+        80% 30%, 
+        100% 50%, 
+        80% 70%, 
+        50% 100%, 
+        20% 70%, 
+        0% 50%, 
+        20% 30%
+    );
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    overflow: hidden;
+    position: relative;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 20px var(--primary-color);
+    margin: 30px 20px 20px;
+}
+
+/* Alien scanner effect */
+.chat-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-color);
+    opacity: 0.7;
+    z-index: 5;
+    animation: scanline 4s linear infinite;
+}
+
+@keyframes scanline {
+    0% {
+        transform: translateY(-100px);
+    }
+    50%, 100% {
+        transform: translateY(100vh);
+    }
+}
+
+/* Corner decorations */
+.chat-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border-top: 2px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
+}
+
+.chat-container .corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+}
+
+.corner-tr {
+    top: 0;
+    right: 0;
+    border-top: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+}
+
+.corner-bl {
+    bottom: 0;
+    left: 0;
+    border-bottom: 2px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
+}
+
+.corner-br {
+    bottom: 0;
+    right: 0;
+    border-bottom: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+}
+
+/* Background glow effect */
+.chat-container .glow {
+    content: '';
+    position: absolute;
+    top: calc(50% * var(--mouse-y, 0.5));
+    left: calc(50% * var(--mouse-x, 0.5));
+    width: 40%;
+    height: 30%;
+    background: radial-gradient(circle, var(--glow-color) 0%, rgba(0,0,0,0) 70%);
+    transform: translate(-50%, -50%);
+    opacity: 0.7;
+    pointer-events: none;
+    filter: blur(60px);
+    z-index: 0;
+    transition: top 0.8s ease-out, left 0.8s ease-out;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 20px 20px; /* Padding adjusted */
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+#chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 0;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+    background-color: var(--surface-color);
+}
+
+.message {
+    padding: 12px 16px;
+    border-radius: 0;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: visible;
+    max-width: 85%;
+    background: var(--surface-color);
+    box-shadow: 0 0 8px var(--glow-color);
+    transform-origin: center;
+    animation: messageAppear 0.5s ease-out forwards;
+    text-align: var(--text-align);
+    direction: var(--direction);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    border-left: 2px solid var(--primary-color);
+}
+
+.message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background-color: var(--primary-color);
+    opacity: 0.05;
+    transition: width 0.5s ease;
+}
+
+.message:hover::before {
+    width: 100%;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-message {
+    align-self: flex-end;
+    margin-left: auto;
+    margin-right: 0;
+    background: var(--surface-color);
+    border-left: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+    border-top: 1px solid var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+    clip-path: none;
+    box-shadow: 0 0 8px var(--glow-color);
+}
+
+[dir="rtl"] .user-message {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.user-message::after {
+    content: "USER";
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    font-size: 0.6rem;
+    color: var(--primary-color);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+
+.ai-message {
+    align-self: flex-start;
+    margin-right: auto;
+    margin-left: 0;
+    background: var(--surface-color);
+    border-left: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+    border-top: 1px solid var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+    clip-path: none;
+}
+
+[dir="rtl"] .ai-message {
+    margin-right: 0;
+    margin-left: auto;
+}
+
+.ai-message::after {
+    content: "AI";
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    font-size: 0.6rem;
+    color: var(--primary-color);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+
+/* Improved paragraph spacing */
+.ai-message p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.ai-message p:last-child {
+    margin-bottom: 0;
+}
+
+/* List styling */
+.ai-message ul, .ai-message ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.ai-message li {
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.ai-message ul li::before {
+    content: '>';
+    color: var(--primary-color);
+    position: absolute;
+    left: -18px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.ai-message li:last-child {
+    margin-bottom: 0;
+}
+
+/* Code block improvements */
+.ai-message pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--primary-color);
+}
+
+.ai-message pre::before {
+    content: "CODE:";
+    display: block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+/* Inline code */
+.ai-message code:not(pre code) {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: var(--primary-light);
+    padding: 2px 5px;
+    border-radius: 0;
+    font-family: 'Fira Code', 'SF Mono', monospace;
+    font-size: 0.9em;
+    border-bottom: 1px solid var(--primary-color);
+}
+
+/* Headings */
+.ai-message h1, .ai-message h2, .ai-message h3, .ai-message h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-family: 'Orbitron', 'Cairo', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid var(--primary-color);
+    padding-bottom: 5px;
+    text-shadow: 0 0 10px var(--glow-color);
+}
+
+.ai-message h1 {
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+}
+
+.ai-message h2 {
+    font-size: 1.2rem;
+    letter-spacing: 1.5px;
+}
+
+.ai-message h3 {
+    font-size: 1.1rem;
+}
+
+.ai-message h4 {
+    font-size: 1rem;
+}
+
+/* Links */
+.ai-message a {
+    color: var(--primary-light);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--primary-light);
+    transition: color 0.2s, border-bottom 0.2s;
+    position: relative;
+}
+
+.ai-message a:hover {
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.ai-message a::after {
+    content: '↗';
+    font-size: 0.8em;
+    margin-left: 4px;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+/* Blockquotes */
+.ai-message blockquote {
+    margin: 16px 0;
+    padding: 8px 16px;
+    border-left: 2px solid var(--primary-color);
+    background-color: rgba(0, 230, 118, 0.05);
+    border-radius: 0;
+    font-style: italic;
+}
+
+.ai-message blockquote::before {
+    content: '"';
+    font-size: 1.5em;
+    line-height: 0.1em;
+    color: var(--primary-color);
+    margin-right: 5px;
+    vertical-align: -0.3em;
+}
+
+/* Tables */
+.ai-message table {
+    margin: 16px 0;
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--primary-dark);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.ai-message table th, 
+.ai-message table td {
+    padding: 8px 12px;
+    border: 1px solid var(--primary-dark);
+    text-align: left;
+}
+
+.ai-message table th {
+    background-color: rgba(0, 230, 118, 0.1);
+    font-weight: 600;
+    color: var(--primary-light);
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+}
+
+.ai-message table tr:nth-child(even) {
+    background-color: rgba(0, 230, 118, 0.02);
+}
+
+/* Horizontal rule */
+.ai-message hr {
+    margin: 24px 0;
+    border: 0;
+    height: 1px;
+    background-color: var(--primary-dark);
+    position: relative;
+}
+
+.ai-message hr::before,
+.ai-message hr::after {
+    content: "";
+    position: absolute;
+    height: 5px;
+    width: 5px;
+    background-color: var(--primary-color);
+    top: -2px;
+}
+
+.ai-message hr::before {
+    left: 0;
+}
+
+.ai-message hr::after {
+    right: 0;
+}
+
+/* Emoji support */
+.ai-message .emoji {
+    display: inline-block;
+    margin: 0 2px;
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+/* Math expressions */
+.ai-message .math {
+    padding: 2px 4px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 0;
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.ai-message .math-block {
+    display: block;
+    padding: 12px;
+    margin: 16px 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 0;
+    overflow-x: auto;
+    text-align: center;
+    border: 1px solid var(--primary-dark);
+}
+
+/* Input area with integrated mode selection */
+.input-area {
+    display: flex;
+    padding: 15px;
+    margin-top: auto;
+    position: relative;
+    background-color: var(--surface-color);
+    border-top: 1px solid var(--primary-color);
+    align-items: center;
+}
+
+/* Remove mode icon styles */
+.mode-icons {
+    display: none;
+}
+
+.mode-icon {
+    display: none;
+}
+
+#user-input {
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--primary-color);
+    color: var(--text-color);
+    padding: 12px;
+    border-radius: var(--border-radius);
+    font-family: 'Fira Code', monospace;
+    resize: none;
+    height: 44px;
+    max-height: 150px;
+    font-size: 14px;
+    outline: none;
+    box-shadow: inset 0 0 10px rgba(0, 230, 118, 0.1);
+    transition: all 0.3s ease;
+}
+
+#user-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: inset 0 0 15px rgba(0, 230, 118, 0.2), 0 0 10px rgba(0, 230, 118, 0.1);
+}
+
+#user-input::placeholder {
+    color: var(--primary-color);
+    opacity: 0.7;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+
+.einstein-mode #user-input {
+    border-color: #3498db;
+    box-shadow: inset 0 0 10px rgba(52, 152, 219, 0.1);
+}
+
+.einstein-mode #user-input:focus {
+    border-color: #3498db;
+    box-shadow: inset 0 0 15px rgba(52, 152, 219, 0.2), 0 0 10px rgba(52, 152, 219, 0.1);
+}
+
+.einstein-mode #user-input::placeholder {
+    color: #3498db;
+}
+
+/* Remove the old mode-selector styles */
+.mode-selector {
+    display: none;
+}
+
+/* Send button styles */
+#send-button {
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0;
+    margin-left: 10px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
+}
+
+#send-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: -1;
+}
+
+#send-button:hover {
+    color: var(--bg-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 230, 118, 0.2);
+}
+
+#send-button:hover::before {
+    opacity: 1;
+}
+
+#send-button:active {
+    transform: translateY(0);
+}
+
+#send-button svg {
+    transition: transform 0.2s;
+}
+
+#send-button:hover svg {
+    transform: scale(1.1);
+}
+
+/* Einstein mode send button */
+.einstein-mode #send-button {
+    border-color: #3498db;
+    color: #3498db;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+}
+
+.einstein-mode #send-button:hover {
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+}
+
+.einstein-mode #send-button::before {
+    background-color: #3498db;
+}
+
+/* Typing indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+    padding: 12px 16px;
+    background-color: rgba(0, 230, 118, 0.03);
+    border-radius: 0;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 10px);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+}
+
+.typing-indicator::before {
+    content: "PROCESSING";
+    margin-right: 10px;
+}
+
+.typing-indicator span {
+    width: 6px;
+    height: 6px;
+    margin: 0 2px;
+    background-color: var(--primary-color);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    display: inline-block;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typingBounce {
+    0%, 80%, 100% { 
+        transform: scale(0);
+    } 40% { 
+        transform: scale(1.0);
+    }
+}
+
+/* Auto-grow for textarea */
+#user-input {
+    overflow: hidden;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0;
+    }
+    
+    .message {
+        max-width: 95%;
+    }
+
+    .chat-container {
+        margin: 40px 10px 10px;
+    }
+
+    #chat-messages {
+        padding: 80px 12px 12px;
+    }
+
+    .input-area {
+        padding: 12px;
+    }
+}
+
+/* Einstein-specific light effect for formulas */
+.einstein-mode .formula {
+    position: relative;
+    overflow: hidden;
+    font-family: 'Times New Roman', serif;
+    padding: 2px 6px;
+    background: rgba(52, 152, 219, 0.1);
+    border-left: 2px solid #3498db;
+    margin: 0 3px;
+    font-style: italic;
+    display: inline-block;
+    border-radius: 3px;
+    box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+    transition: all 0.3s ease;
+}
+
+.einstein-mode .formula:hover {
+    background: rgba(52, 152, 219, 0.2);
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+    transform: scale(1.05);
+}
+
+.einstein-mode .formula::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(52, 152, 219, 0.2),
+        transparent
+    );
+    animation: einsteinFormulaLight 2s infinite;
+}
+
+/* Einstein important formula styling - for E=mc² and other key equations */
+.einstein-mode .important-formula {
+    display: inline-block;
+    font-family: 'Times New Roman', serif;
+    padding: 8px 16px;
+    margin: 10px 0;
+    background: rgba(52, 152, 219, 0.15);
+    border-left: 4px solid #3498db;
+    font-style: italic;
+    font-weight: bold;
+    font-size: 1.1em;
+    letter-spacing: 1px;
+    text-align: center;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.einstein-mode .important-formula::before {
+    content: "⚛";
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7em;
+    opacity: 0.6;
+}
+
+.einstein-mode .important-formula::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(52, 152, 219, 0.3),
+        transparent
+    );
+    animation: einsteinImportantFormulaLight 3s infinite ease-in-out;
+}
+
+@keyframes einsteinFormulaLight {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes einsteinImportantFormulaLight {
+    0% {
+        left: -100%;
+    }
+    50% {
+        left: 100%;
+    }
+    100% {
+        left: -100%;
+    }
+}
+
+/* Text animation */
+.animate-text {
+    display: block;
+    transition: opacity 0.5s ease-in-out;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.animate-text .letter {
+    display: inline;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* For code highlighting with alien theme */
+.token.comment, .token.prolog, .token.doctype, .token.cdata {
+    color: #4dde8a;
+    font-style: italic;
+}
+
+.token.punctuation {
+    color: #9effc5;
+}
+
+.token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted {
+    color: #00ffb3;
+}
+
+.token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted {
+    color: #b3ffcc;
+}
+
+.token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string {
+    color: #80ffcc;
+}
+
+.token.atrule, .token.attr-value, .token.keyword {
+    color: #00e676;
+}
+
+.token.function, .token.class-name {
+    color: #81ffa2;
+}
+
+.token.regex, .token.important, .token.variable {
+    color: #39ff14;
+}
+
+/* API Key Prompt */
+.api-key-prompt {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.api-key-container {
+    background-color: var(--surface-color);
+    border-radius: 0;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    border: 1px solid var(--primary-color);
+    animation: fadeIn 0.3s ease-out;
+    position: relative;
+}
+
+.api-key-container::before,
+.api-key-container::after,
+.api-key-container .corner {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+}
+
+.api-key-container::before {
+    top: 0;
+    left: 0;
+    border-top: 2px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
+}
+
+.api-key-container::after {
+    top: 0;
+    right: 0;
+    border-top: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+}
+
+.api-key-container .corner-bl {
+    bottom: 0;
+    left: 0;
+    border-bottom: 2px solid var(--primary-color);
+    border-left: 2px solid var(--primary-color);
+}
+
+.api-key-container .corner-br {
+    bottom: 0;
+    right: 0;
+    border-bottom: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+}
+
+.api-key-container h3 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.api-key-container p {
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+#api-key-input {
+    width: 100%;
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: var(--primary-light);
+    border: 1px solid var(--primary-dark);
+    border-radius: 0;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    transition: border-color var(--transition-speed);
+    font-family: 'Fira Code', monospace;
+}
+
+#api-key-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.1);
+}
+
+.api-key-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#save-api-key {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 0;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform 0.2s, box-shadow 0.2s;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+#save-api-key::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: -1;
+}
+
+#save-api-key:hover {
+    color: var(--bg-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 230, 118, 0.2);
+}
+
+#save-api-key:hover::before {
+    opacity: 1;
+}
+
+#save-api-key:active {
+    transform: translateY(0);
+}
+
+.api-key-buttons a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color var(--transition-speed);
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid transparent;
+}
+
+.api-key-buttons a:hover {
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--accent-color);
+}
+
+/* Pulse animation for the alien theme */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 230, 118, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+    }
+}
+
+/* Add these dramatic effects to your existing styles */
+
+@keyframes scannerGlow {
+    0%, 100% {
+        box-shadow: 
+            0 0 10px var(--primary-color),
+            0 0 20px var(--primary-color),
+            0 0 30px var(--primary-color),
+            0 0 40px var(--primary-color);
+    }
+    50% {
+        box-shadow: 
+            0 0 15px var(--accent-color),
+            0 0 25px var(--accent-color),
+            0 0 35px var(--accent-color),
+            0 0 45px var(--accent-color);
+    }
+}
+
+@keyframes matrixRain {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 0% 100%;
+    }
+}
+
+@keyframes glitchText {
+    0%, 100% {
+        text-shadow: 1px 0 var(--primary-color), -1px 0 var(--accent-color);
+        transform: translate(1px, 1px);
+    }
+    25% {
+        text-shadow: -1px 0 var(--primary-color), 1px 0 var(--accent-color);
+        transform: translate(-1px, -1px);
+    }
+    50% {
+        text-shadow: 1px 0 var(--accent-color), -1px 0 var(--primary-color);
+        transform: translate(-1px, 1px);
+    }
+    75% {
+        text-shadow: -1px 0 var(--accent-color), 1px 0 var(--primary-color);
+        transform: translate(1px, -1px);
+    }
+}
+
+@keyframes powerSurge {
+    0% {
+        filter: brightness(1) contrast(1);
+    }
+    50% {
+        filter: brightness(1.2) contrast(1.5);
+    }
+    51% {
+        filter: brightness(0.8) contrast(2);
+    }
+    100% {
+        filter: brightness(1) contrast(1);
+    }
+}
+
+@keyframes hologramFlicker {
+    0%, 100% { opacity: 0.95; }
+    33% { opacity: 0.8; }
+    66% { opacity: 0.7; }
+    77% { opacity: 0.9; }
+    88% { opacity: 0.75; }
+}
+
+.message.ai-message {
+    position: relative;
+    animation: powerSurge 8s infinite;
+    white-space: normal;
+    word-break: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.message.ai-message::before {
+    opacity: 0.3;
+}
+
+.alien-char {
+    text-shadow: 0 0 8px var(--primary-color), 0 0 12px var(--primary-color);
+    position: relative;
+    display: inline-block;
+    animation: smallGlitch 4s infinite;
+    animation-play-state: running;
+}
+
+@keyframes smallGlitch {
+    0%, 100% {
+        transform: none;
+        opacity: 1;
+    }
+    7% {
+        transform: skew(-0.5deg, -0.3deg);
+        opacity: 0.95;
+    }
+    10% {
+        transform: none;
+        opacity: 1;
+    }
+    27% {
+        transform: none;
+        opacity: 1;
+    }
+    30% {
+        transform: skew(0.8deg, -0.1deg);
+        opacity: 0.97;
+    }
+    35% {
+        transform: none;
+        opacity: 1;
+    }
+    52% {
+        transform: none;
+        opacity: 1;
+    }
+    55% {
+        transform: skew(-1deg, 0.2deg);
+        opacity: 0.95;
+    }
+    50% {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+.alien-highlight {
+    position: relative;
+    animation: hologramFlicker 4s infinite;
+}
+
+.alien-highlight::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 1px solid var(--primary-color);
+    animation: scannerGlow 2s infinite;
+    pointer-events: none;
+}
+
+.chat-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 230, 118, 0.03) 3px,
+            rgba(0, 230, 118, 0.03) 3px
+        );
+    pointer-events: none;
+    animation: scanline 10s linear infinite;
+    opacity: 0.5;
+}
+
+.typing-indicator {
+    position: relative;
+    overflow: hidden;
+}
+
+.typing-indicator::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 230, 118, 0.2),
+        transparent
+    );
+    animation: scanning 2s linear infinite;
+}
+
+@keyframes scanning {
+    from {
+        transform: translateX(-50%);
+    }
+    to {
+        transform: translateX(50%);
+    }
+}
+
+/* Enhanced message transitions */
+.message {
+    transform-origin: center;
+    animation: messageAppear 0.5s ease-out forwards;
+}
+
+@keyframes messageAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+        filter: blur(10px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.05) translateY(-5px);
+        filter: blur(5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0);
+    }
+}
+
+/* Enhanced code block styling */
+.ai-message pre {
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-message pre::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-color);
+    animation: codeScan 2s linear infinite;
+}
+
+@keyframes codeScan {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+/* Enhanced input area */
+#user-input:focus {
+    animation: inputPulse 2s infinite;
+}
+
+@keyframes inputPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px var(--primary-color),
+                   0 0 10px var(--primary-color),
+                   0 0 15px var(--primary-color);
+    }
+    50% {
+        box-shadow: 0 0 10px var(--primary-color),
+                   0 0 20px var(--primary-color),
+                   0 0 30px var(--primary-color);
+    }
+}
+
+/* Enhanced send button */
+#send-button {
+    position: relative;
+    overflow: hidden;
+}
+
+#send-button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(0, 230, 118, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    animation: buttonGlow 3s linear infinite;
+}
+
+@keyframes buttonGlow {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
+}
+
+/* Enhanced scrollbar */
+#chat-messages::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+#chat-messages::-webkit-scrollbar-track {
+    background: rgba(0, 230, 118, 0.05);
+}
+
+/* Matrix-like background effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        0deg,
+        transparent 50%,
+        rgba(0, 230, 118, 0.02) 51%,
+        transparent 52%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    animation: matrixScan 10s linear infinite;
+    opacity: 0.5;
+}
+
+@keyframes matrixScan {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(100%);
+    }
+}
+
+/* Holographic effect for headings */
+.ai-message h1,
+.ai-message h2,
+.ai-message h3,
+.ai-message h4 {
+    position: relative;
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+.ai-message h1::before,
+.ai-message h2::before,
+.ai-message h3::before,
+.ai-message h4::before {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+    animation: hologramSplit 8s infinite;
+    opacity: 0.3;
+}
+
+@keyframes hologramSplit {
+    0%, 100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translate(0);
+    }
+    25% {
+        clip-path: polygon(0 15%, 100% 0, 100% 85%, 0 100%);
+        transform: translate(2px);
+    }
+    50% {
+        clip-path: polygon(0 0, 100% 15%, 100% 100%, 0 85%);
+        transform: translate(-2px);
+    }
+    75% {
+        clip-path: polygon(0 85%, 100% 0, 100% 100%, 0 15%);
+        transform: translate(2px);
+    }
+}
+
+/* Fix text styling for alien aesthetics while improving readability */
+
+.alien-text {
+    line-height: 1.7;
+    margin-bottom: 15px;
+    color: var(--text-color);
+    text-shadow: 0 0 5px var(--primary-color);
+    letter-spacing: 0.03em;
+}
+
+/* Adjust paragraph spacing */
+.ai-message p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+/* Adjust code blocks for better readability */
+.ai-message pre {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0, 20, 10, 0.8);
+    border-left: 3px solid var(--primary-color);
+    font-family: 'Menlo', 'Consolas', monospace;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    color: var(--text-color);
+    line-height: 1.5;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+}
+
+/* Enhanced headings for better readability */
+.ai-message h1,
+.ai-message h2,
+.ai-message h3,
+.ai-message h4 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+/* ASCII art styling */
+.ai-message pre.ascii-art {
+    font-family: monospace;
+    line-height: 0.9;
+    font-size: 0.45em;
+    color: var(--primary-color);
+    text-shadow: 0 0 8px var(--primary-color);
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    white-space: pre;
+    box-shadow: none;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    letter-spacing: 0;
+}
+
+/* Smaller ASCII art for Einstein mode */
+.einstein-mode .ai-message pre.ascii-art {
+    font-size: 0.10em;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    overflow: hidden;
+    transform: none;
+    color: var(--primary-color);
+    text-shadow: 0 0 8px var(--primary-color);
+}
+
+/* Adjust Einstein mode message container for ASCII art */
+.einstein-mode .ai-message:has(pre.ascii-art) {
+    display: block;
+    width: auto;
+    max-width: 85%;
+    padding: 12px 16px;
+    border-left: 2px solid #3498db;
+    border-right: 2px solid #3498db;
+    border-top: 1px solid #3498db;
+    border-bottom: 1px solid #3498db;
+    background-color: var(--surface-color);
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.7);
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+/* Add Arabic font styling */
+:lang(ar) {
+    font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+/* Code blocks RTL support */
+[dir="rtl"] pre {
+    direction: ltr;
+    text-align: left;
+}
+
+[dir="rtl"] code {
+    direction: ltr;
+    display: inline-block;
+}
+
+/* Blockquote RTL support */
+[dir="rtl"] blockquote {
+    border-left: none;
+    border-right: 4px solid var(--primary-color);
+    padding-left: 0;
+    padding-right: 15px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Lists RTL support */
+[dir="rtl"] ul, 
+[dir="rtl"] ol {
+    padding-left: 0;
+    padding-right: 20px;
+}
+
+/* Tables RTL support */
+[dir="rtl"] table {
+    direction: rtl;
+}
+
+/* Ensure the send button is properly positioned in RTL mode */
+[dir="rtl"] .send-button {
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+/* Adjust corner decorations for RTL */
+[dir="rtl"] .corner-tr {
+    left: 0;
+    right: auto;
+}
+
+[dir="rtl"] .corner-br {
+    left: 0;
+    right: auto;
+}
+
+[dir="rtl"] .corner-bl {
+    right: 0;
+    left: auto;
+}
+
+/* Adjust typing indicator for RTL */
+[dir="rtl"] .typing-indicator {
+    left: auto;
+    right: 20px;
+}
+
+/* Ensure proper alignment of special characters in RTL */
+[dir="rtl"] .alien-char {
+    display: inline-block;
+}
+
+/* API key prompt RTL support */
+[dir="rtl"] .api-key-prompt {
+    text-align: right;
+}
+
+[dir="rtl"] .api-key-prompt input {
+    text-align: right;
+    direction: rtl;
+}
+
+[dir="rtl"] .api-key-prompt button {
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+/* API key overlay and prompt */
+.api-key-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.api-key-prompt {
+    background-color: var(--surface-color);
+    border: 2px solid var(--primary-color);
+    padding: 25px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 30px var(--glow-color);
+    position: relative;
+    overflow: visible;
+}
+
+.api-key-prompt::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(90deg, transparent 0%, transparent 49%, var(--grid-color) 49%, var(--grid-color) 51%, transparent 51%, transparent 100%) repeat,
+        linear-gradient(transparent 0%, transparent 49%, var(--grid-color) 49%, var(--grid-color) 51%, transparent 51%, transparent 100%) repeat;
+    background-size: 30px 30px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.api-key-prompt h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-family: 'Orbitron', 'Cairo', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--glow-color);
+}
+
+.api-key-prompt p {
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.api-key-prompt input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--primary-color);
+    color: var(--text-color);
+    font-family: 'Fira Code', 'Cairo', monospace;
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.api-key-prompt button {
+    padding: 8px 16px;
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    cursor: pointer;
+    font-family: 'Orbitron', 'Cairo', sans-serif;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.api-key-prompt button:hover {
+    background-color: var(--primary-color);
+    color: var(--surface-color);
+}
+
+.save-button {
+    background-color: rgba(0, 230, 118, 0.1) !important;
+}
+
+.cancel-button {
+    background-color: rgba(255, 0, 0, 0.1) !important;
+}
+
+/* Remove language switcher styles */
+.lang-switcher {
+    display: none !important;  /* Override any existing styles */
+}
+
+/* Language notification styling */
+.language-notification {
+    position: fixed;
+    bottom: 20px;
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0 15px var(--glow-color);
+    z-index: 1000;
+    font-family: 'Orbitron', 'Cairo', sans-serif;
+    font-size: 14px;
+    border-left: 3px solid var(--primary-color);
+    border-right: 3px solid var(--primary-color);
+    animation: notificationPulse 3s infinite;
+}
+
+[dir="rtl"] .language-notification {
+    text-align: right;
+}
+
+@keyframes notificationPulse {
+    0%, 100% { box-shadow: 0 0 15px var(--glow-color); }
+    50% { box-shadow: 0 0 25px var(--primary-color); }
+}
+
+/* Update user message to have glowing green border like AI message */
+.user-message {
+    align-self: flex-end;
+    margin-left: auto;
+    margin-right: 0;
+    background: var(--surface-color);
+    border-left: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+    border-top: 1px solid var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+    clip-path: none;
+    box-shadow: 0 0 8px var(--glow-color);
+}
+
+/* Remove the INPUT: label */
+.input-area::before {
+    content: none;
+}
+
+/* Remove the USER label */
+.container::after {
+    content: none;
+}
+
+/* Knowledge base indicator styles */
+.from-knowledge-base {
+    border-left: 4px solid #5dfa9a !important;
+}
+
+.knowledge-source-indicator {
+    font-size: 0.85em;
+    margin-bottom: 10px;
+    padding: 4px 10px;
+    background-color: rgba(0, 230, 118, 0.1);
+    border-radius: var(--border-radius);
+    color: var(--primary-light);
+    display: inline-flex;
+    align-items: center;
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 0.5px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.kb-icon {
+    margin-right: 8px;
+    font-size: 1.1em;
+    animation: pulse 2s infinite alternate;
+}
+
+/* Adjust message styles when from knowledge base */
+.from-knowledge-base.ai-message pre {
+    border-left: 3px solid #5dfa9a;
+}
+
+.from-knowledge-base .alien-header,
+.from-knowledge-base .alien-text {
+    color: #5dfa9a;
+}
+
+/* Mode Selector Styles */
+.mode-selector {
+    display: flex;
+    justify-content: center;
+    margin: 10px auto;
+    gap: 10px;
+    max-width: 320px;
+}
+
+.mode-button {
+    padding: 8px 16px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: var(--border-radius);
+}
+
+.mode-button:hover {
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+.mode-button.active {
+    background-color: var(--primary-color);
+    color: var(--surface-color);
+}
+
+/* Einstein Mode Styling */
+.einstein-mode .ai-message {
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.7);
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.einstein-mode .glow {
+    background: radial-gradient(circle, rgba(52, 152, 219, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+}
+
+.einstein-mode .alien-highlight {
+    color: #3498db;
+    animation: einsteinPulse 3s infinite;
+}
+
+.einstein-mode .alien-char {
+    text-shadow: 0 0 8px #3498db, 0 0 12px #3498db;
+}
+
+.einstein-mode #user-input:focus {
+    box-shadow: 0 0 5px #3498db, 0 0 10px #3498db;
+}
+
+.einstein-mode .corner::before, 
+.einstein-mode .corner::after {
+    background-color: #3498db;
+}
+
+.einstein-mode .mode-button[data-mode="einstein"] {
+    background-color: #3498db;
+    color: var(--surface-color);
+}
+
+.einstein-mode .mode-button[data-mode="alien"] {
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+}
+
+.einstein-mode .model-indicator {
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0ODAiIGhlaWdodD0iNDgwIiB2aWV3Qm94PSIwIDAgNDgwIDQ4MCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTI0MCA0ODBjMTMyLjU0OCAwIDI0MC0xMDcuNDUyIDI0MC0yNDBTMzcyLjU0OCAwIDI0MCAwIDAgMTA3LjQ1MiAwIDI0MHMxMDcuNDUyIDI0MCAyNDAgMjQweiIgZmlsbD0iIzM0OThkYiIvPjxwYXRoIGQ9Ik0yNTcgMTU3Yy02IDYtMTUgOS0yMyA5LTkgMC0xNy0zLTIzLTlzLTkgMTUtOS0yM2MwLTkgMy0xNyA5LTIzczcgMCA5IDRjMiAzIDIgNyAwIDktMyAzLTUgNi01IDEwczIgOCA1IDEwIDYgNSAxMCA1IDgtMiAxMC01Yy0yLTIgNi0yIDkgMCAyIDIgMiA2IDAgOSVNMjU3IDE1N2MtNiA2LTE1IDkgLTIzIDl6IiBmaWxsPSIjRkZGIi8+PC9zdmc+");
+    background-size: contain;
+    background-position: center left;
+    background-repeat: no-repeat;
+    padding-left: 30px;
+}
+
+/* Einstein mode typing indicator */
+.einstein-mode .typing-indicator {
+    background-color: rgba(52, 152, 219, 0.1);
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.einstein-mode .typing-indicator::before {
+    content: "THINKING...";
+}
+
+.einstein-mode .typing-indicator span {
+    background-color: #3498db;
+}
+
+/* Einstein formula styling */
+.einstein-mode .formula {
+    font-family: 'Georgia', serif;
+    color: #3498db;
+    font-weight: bold;
+    padding: 2px 4px;
+    display: inline-block;
+    background-color: rgba(52, 152, 219, 0.1);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.einstein-mode .formula:hover {
+    background-color: rgba(52, 152, 219, 0.2);
+    transform: scale(1.05);
+}
+
+/* Einstein quote styling */
+.einstein-mode .einstein-quote {
+    font-style: italic;
+    color: #1abc9c;
+    border-left: 2px solid #1abc9c;
+    padding-left: 10px;
+    margin: 10px 0;
+    display: inline-block;
+}
+
+/* Header styling for Einstein mode */
+.einstein-mode h1, 
+.einstein-mode h2, 
+.einstein-mode h3 {
+    color: #2ecc71;
+    border-bottom: 1px solid rgba(46, 204, 113, 0.3);
+    padding-bottom: 5px;
+}
+
+/* Einstein expression styling */
+.einstein-mode .einstein-expression {
+    font-style: italic;
+    color: #2ecc71;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* Einstein thought experiment styling */
+.einstein-mode .thought-experiment {
+    background-color: rgba(52, 152, 219, 0.05);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    position: relative;
+    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.1);
+}
+
+.einstein-mode .thought-experiment::before {
+    content: '💭';
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--bg-color);
+    padding: 0 10px;
+    font-size: 1.4em;
+}
+
+.einstein-mode .thought-experiment::after {
+    content: "Gedankenexperiment";
+    position: absolute;
+    bottom: -8px;
+    right: 20px;
+    background: var(--bg-color);
+    padding: 0 10px;
+    font-size: 0.8em;
+    color: #3498db;
+    font-style: italic;
+}
+
+/* Einstein biographical reference styling */
+.einstein-mode .einstein-bio {
+    color: #3498db;
+    background: rgba(52, 152, 219, 0.05);
+    padding: 0 5px;
+    border-bottom: 1px dashed #3498db;
+    font-style: italic;
+    position: relative;
+    cursor: help;
+}
+
+.einstein-mode .einstein-bio:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+/* Einstein colleague reference styling */
+.einstein-mode .einstein-colleague {
+    color: #9b59b6;
+    font-weight: 600;
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dotted #9b59b6;
+}
+
+.einstein-mode .einstein-colleague:hover {
+    color: #8e44ad;
+}
+
+/* Enhanced Einstein quote styling */
+.einstein-mode .einstein-quote {
+    font-style: italic;
+    color: #1abc9c;
+    border-left: 2px solid #1abc9c;
+    padding-left: 10px;
+    margin: 10px 0;
+    display: inline-block;
+}
+
+.einstein-mode .einstein-quote::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: #1abc9c;
+}
+
+/* LaTeX math styling for Einstein mode */
+.einstein-mode .latex-math {
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+}
+
+/* Ensure LaTeX formula has proper spacing and alignment */
+.einstein-mode .important-formula.latex-math {
+    display: block;
+    margin: 15px auto;
+    padding: 15px;
+    text-align: center;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Einstein step-by-step explanation styling */
+.einstein-mode .variable-explanation {
+    display: block;
+    margin: 15px 0;
+    padding-left: 20px;
+    border-left: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+.einstein-mode .variable {
+    font-style: italic;
+    font-weight: bold;
+    color: #3498db;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.2em;
+}
+
+.einstein-mode .explanation-step {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dotted rgba(52, 152, 219, 0.2);
+}
+
+/* Enhance subscript and superscript formatting */
+.einstein-mode sub, 
+.einstein-mode sup {
+    font-size: 0.75em;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+.einstein-mode sub {
+    bottom: -0.25em;
+    color: #3498db;
+}
+
+.einstein-mode sup {
+    top: -0.5em;
+    color: #3498db;
+}
+
+/* Muscular Einstein entry animation - ENHANCED VERSION */
+.muscular-einstein {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 400px;
+    height: 400px;
+    z-index: 10000;
+    opacity: 0;
+    background-image: url('Screenshot.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: brightness(1.2) contrast(1.8) drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));
+}
+
+.einstein-mode-transition .muscular-einstein {
+    animation: einsteinFlex 3.5s forwards;
+}
+
+@keyframes einsteinFlex {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    }
+    10% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.7) rotate(-5deg);
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(0.9) rotate(5deg);
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1.1) rotate(-5deg);
+    }
+    40% {
+        transform: translate(-50%, -50%) scale(1.3) rotate(3deg);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.5) rotate(-3deg);
+        filter: brightness(1.3) contrast(2) drop-shadow(0 0 50px rgba(255, 255, 255, 0.9));
+    }
+    60% {
+        transform: translate(-50%, -50%) scale(1.4) rotate(2deg);
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.3) rotate(-2deg);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    }
+}
+
+/* Add glitch effect to Einstein */
+.einstein-mode-transition .muscular-einstein::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    background-position: center;
+    background-size: cover;
+    filter: hue-rotate(120deg) saturate(3);
+    animation: einsteinGlitch 1s infinite;
+    z-index: -1;
+    opacity: 0.3;
+    mix-blend-mode: exclusion;
+}
+
+@keyframes einsteinGlitch {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0.3;
+    }
+    20% {
+        transform: translate(-10px, 0);
+        opacity: 0.4;
+    }
+    40% {
+        transform: translate(10px, -5px);
+        opacity: 0.2;
+    }
+    60% {
+        transform: translate(-5px, 5px);
+        opacity: 0.3;
+    }
+    80% {
+        transform: translate(5px, -10px);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translate(0, 0);
+        opacity: 0.3;
+    }
+}
+
+/* Einstein mode transition class */
+.einstein-mode-transition {
+    position: relative;
+}
+
+.einstein-mode-transition::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(52, 152, 219, 0.3);
+    z-index: 9998;
+    animation: einsteinBackground 3.5s forwards;
+}
+
+@keyframes einsteinBackground {
+    0% {
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.7;
+    }
+    80% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Einstein speech bubble when entering mode */
+.einstein-speech-bubble {
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #2ecc71;
+    color: white;
+    padding: 20px 30px;
+    border-radius: 30px;
+    z-index: 10001;
+    opacity: 0;
+    font-size: 28px;
+    font-weight: bold;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 30px rgba(46, 204, 113, 0.7);
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    font-family: 'Times New Roman', serif;
+}
+
+.einstein-speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 20px 20px 0;
+    border-style: solid;
+    border-color: #2ecc71 transparent transparent transparent;
+}
+
+.einstein-mode-transition .einstein-speech-bubble {
+    animation: einsteinSpeech 3.5s forwards;
+}
+
+@keyframes einsteinSpeech {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+    20% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    60% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+}
+
+/* Add Einstein's equations floating around during transition */
+.einstein-equation {
+    position: absolute;
+    color: #2ecc71;
+    font-size: 24px;
+    font-weight: bold;
+    opacity: 0;
+    z-index: 9990;
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+    font-family: 'Times New Roman', serif;
+}
+
+.einstein-mode-transition .einstein-equation {
+    animation: floatingEquation 3.5s forwards;
+}
+
+@keyframes floatingEquation {
+    0% {
+        opacity: 0;
+        transform: translateY(0) rotate(0deg);
+    }
+    20% {
+        opacity: 0.8;
+    }
+    80% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-100px) rotate(360deg);
+    }
+}
+
+/* Einstein entry stars effect */
+.einstein-stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.einstein-mode-transition .einstein-stars {
+    animation: einsteinStars 3.5s forwards;
+}
+
+@keyframes einsteinStars {
+    0% {
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.star {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 6px rgba(52, 152, 219, 0.8));
+    animation: twinkle 1s infinite alternate;
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0.3;
+        transform: scale(0.8);
+        filter: drop-shadow(0 0 3px rgba(52, 152, 219, 0.5));
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 8px rgba(52, 152, 219, 0.9));
+    }
+}
+
+/* Newton Mode Elements */
+.muscular-newton {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 400px;
+    height: 400px;
+    z-index: 10000;
+    opacity: 0;
+    background-image: url("Generated Image March 16, 2025 - 2_41PM.png.jpeg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: brightness(1.2) contrast(1.8) drop-shadow(0 0 30px rgba(219, 162, 0, 0.8));
+}
+
+.newton-mode-transition .muscular-newton {
+    animation: newtonFlex 3.5s forwards;
+}
+
+@keyframes newtonFlex {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    }
+    10% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.7) rotate(-5deg);
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(0.9) rotate(5deg);
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1.1) rotate(-5deg);
+    }
+    40% {
+        transform: translate(-50%, -50%) scale(1.3) rotate(3deg);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.5) rotate(-3deg);
+        filter: brightness(1.3) contrast(2) drop-shadow(0 0 50px rgba(219, 162, 0, 0.9));
+    }
+    60% {
+        transform: translate(-50%, -50%) scale(1.4) rotate(2deg);
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.3) rotate(-2deg);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    }
+}
+
+/* Add glitch effect to Newton */
+.newton-mode-transition .muscular-newton::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    background-position: center;
+    background-size: cover;
+    filter: hue-rotate(30deg) saturate(3);
+    animation: newtonGlitch 1s infinite;
+    z-index: -1;
+    opacity: 0.3;
+    mix-blend-mode: exclusion;
+}
+
+@keyframes newtonGlitch {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0.3;
+    }
+    20% {
+        transform: translate(-10px, 0);
+        opacity: 0.4;
+    }
+    40% {
+        transform: translate(10px, -5px);
+        opacity: 0.2;
+    }
+    60% {
+        transform: translate(-5px, 5px);
+        opacity: 0.3;
+    }
+    80% {
+        transform: translate(5px, -10px);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translate(0, 0);
+        opacity: 0.3;
+    }
+}
+
+.newton-mode-transition {
+    position: relative;
+}
+
+.newton-mode-transition::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(219, 162, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 70%);
+    z-index: 9990;
+    opacity: 0;
+    animation: newtonBackground 3.5s forwards;
+}
+
+@keyframes newtonBackground {
+    0% {
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.8;
+    }
+    80% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.newton-speech-bubble {
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f39c12;
+    color: white;
+    padding: 20px 30px;
+    border-radius: 30px;
+    z-index: 10001;
+    opacity: 0;
+    font-size: 28px;
+    font-weight: bold;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 30px rgba(243, 156, 18, 0.7);
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    font-family: 'Times New Roman', serif;
+}
+
+.newton-speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 20px 20px 0;
+    border-style: solid;
+    border-color: #f39c12 transparent transparent transparent;
+}
+
+.newton-mode-transition .newton-speech-bubble {
+    animation: newtonSpeech 3.5s forwards;
+}
+
+@keyframes newtonSpeech {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+    20% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    60% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+}
+
+.newton-stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.newton-mode-transition .newton-stars {
+    animation: newtonStars 3.5s forwards;
+}
+
+@keyframes newtonStars {
+    0% {
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.newton-apple {
+    position: fixed;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    z-index: 10002;
+    opacity: 0;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.7);
+}
+
+.newton-mode-transition .newton-apple {
+    animation: newtonApple 2s forwards;
+    animation-delay: 0.5s;
+}
+
+@keyframes newtonApple {
+    0% {
+        top: -50px;
+        opacity: 0;
+        transform: translateX(-50%) scale(0.5);
+    }
+    10% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+    70% {
+        top: 60%;
+        opacity: 1;
+        transform: translateX(-50%) scale(1) rotate(360deg);
+    }
+    72% {
+        top: 60%;
+        opacity: 1;
+        transform: translateX(-50%) scale(1.3) rotate(360deg);
+    }
+    75% {
+        transform: translateX(-50%) scale(1) rotate(360deg);
+    }
+    85% {
+        top: 60%;
+        opacity: 1;
+    }
+    100% {
+        top: 60%;
+        opacity: 0;
+    }
+}
+
+/* Newton mode styling */
+.newton-mode .ai-message {
+    background-color: rgba(243, 156, 18, 0.1);
+    border-color: #f39c12;
+}
+
+.newton-mode .glow {
+    background: radial-gradient(circle, rgba(243, 156, 18, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+}
+
+.newton-mode #user-input:focus {
+    border-color: #f39c12;
+}
+
+.newton-mode .corner::before, 
+.newton-mode .corner::after {
+    background-color: #f39c12;
+}
+
+.newton-mode .mode-button[data-mode="newton"] {
+    background-color: #f39c12;
+}
+
+.newton-mode .mode-button[data-mode="alien"],
+.newton-mode .mode-button[data-mode="einstein"] {
+    background-color: #333;
+}
+
+.newton-mode .model-indicator {
+    background-color: #f39c12;
+    color: #000;
+    font-family: 'Times New Roman', serif;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.newton-mode .typing-indicator {
+    background-color: rgba(243, 156, 18, 0.2);
+}
+
+.newton-mode .typing-indicator::before {
+    background-color: #f39c12;
+}
+
+.newton-mode .typing-indicator span {
+    background-color: #f39c12;
+}
+
+/* Newton special content styling */
+.newton-mode .formula {
+    display: inline-block;
+    font-family: 'Times New Roman', serif;
+    background-color: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-weight: bold;
+    position: relative;
+    margin: 0 3px;
+}
+
+.newton-mode .formula:hover {
+    background-color: rgba(243, 156, 18, 0.2);
+    box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+}
+
+.newton-mode .newton-quote {
+    display: block;
+    position: relative;
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+    color: #f39c12;
+    margin: 15px 30px;
+    padding: 10px 20px;
+    border-left: 3px solid #f39c12;
+    background-color: rgba(243, 156, 18, 0.05);
+}
+
+.newton-mode .newton-expression {
+    color: #f39c12;
+    font-weight: bold;
+    position: relative;
+    padding: 0 2px;
+}
+
+.newton-mode .newton-bio {
+    color: #e67e22;
+    font-weight: bold;
+    text-decoration: underline;
+    text-decoration-color: rgba(243, 156, 18, 0.3);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+}
+
+.newton-mode .newton-colleague {
+    color: #d35400;
+    font-style: italic;
+}
+
+.newton-mode .newton-quote::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background-color: #f39c12;
+    border-radius: 3px;
+}
