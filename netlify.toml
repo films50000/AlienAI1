@@ -4,17 +4,8 @@
   # Directory with the functions code
   functions = "netlify/functions"
 
-# API redirect with absolute paths
+# Redirect for Netlify Functions
 [[redirects]]
-  from = "/api/*"
-  to = "/netlify/functions/:splat"
-  status = 200
-
-# Default redirect for SPA
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-[[plugins]]
-  package = "@netlify/plugin-functions-install-core" 
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200 

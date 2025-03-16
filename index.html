@@ -3,20 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>ALIEN CODE INTERFACE</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="description" content="Alien Code Interface - An advanced AI assistant with multilingual support">
+    <meta name="keywords" content="AI, assistant, code, alien, interface, Arabic, English, RTL">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTEgMTRIMXYtNGgxMHYyLjU4N0w5LjI5MyA5LjU4N2wtMS40MTQgMS40MTRMNSA4bC00IDQgNCA0IDIuODI3LTIuODI3IDEuNDE0IDEuNDE0TDExIDE2eiIgZmlsbD0iIzAwZTY3NiIvPjwvc3ZnPg==">
 </head>
-<body>
+<body class="alien-mode">
+    <!-- Alien mode elements -->
+    <div class="alien-elements"></div>
+    
+    <!-- Alien mode sound effect -->
+    <audio id="alien-entry-music" preload="auto">
+        <source src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAXAAAARW5oYW5jZWQgYnkgUXVpY2tUaW1lAP/+1GhhdmUgeW91IGV2ZXIgaGVhcmQgdGhlIHRyYWdlZHkgb2YgZGFydGggcGxhZ3VlaXMgdGhlIHdpc2U/IGkgdGhvdWdodCBub3QuIGl0J3Mgbm90IGEgc3RvcnkgdGhlIGplZGkgd291bGQgdGVsbCB5b3UuIGl0J3MgYSBzaXRoIGxlZ2VuZC4gZGFydGggcGxhZ3VlaXMgd2FzIGEgZGFyayBsb3JkIG9mIHRoZSBzaXRoLCBzbyBwb3dlcmZ1bCBhbmQgc28gd2lzZSBoZSBjb3VsZCB1c2UgdGhlIGZvcmNlIHRvIGluZmx1ZW5jZSB0aGUgbWlkaWNobG9yaWFucyB0byBjcmVhdGUgbGlmZS4uLiBoZSBoYWQgc3VjaCBhIGtub3dsZWRnZSBvZiB0aGUgZGFyayBzaWRlIHRoYXQgaGUgY291bGQgZXZlbiBrZWVwIHRoZSBvbmVzIGhlIGNhcmVkIGFib3V0IGZyb20gZHlpbmcuIHRoZSBkYXJrIHNpZGUgb2YgdGhlIGZvcmNlIGlzIGEgcGF0aHdheSB0byBtYW55IGFiaWxpdGllcyBzb21lIGNvbnNpZGVyIHRvIGJlIHVubmF0dXJhbC4gaGUgYmVjYW1lIHNvIHBvd2VyZnVsLi4uIHRoZSBvbmx5IHRoaW5nIGhlIHdhcyBhZnJhaWQgb2Ygd2FzIGxvc2luZyBoaXMgcG93ZXIsIHdoaWNoIGV2ZW50dWFsbHksIG9mIGNvdXJzZSwgaGUgZGlkLiB1bmZvcnR1bmF0ZWx5LCBoZSB0YXVnaHQgaGlzIGFwcHJlbnRpY2UgZXZlcnl0aGluZyBoZSBrbmV3LCB0aGVuIGhpcyBhcHByZW50aWNlIGtpbGxlZCBoaW0gaW4gaGlzIHNsZWVwLiBpcm9uaWMuIGhlIGNvdWxkIHNhdmUgb3RoZXJzIGZyb20gZGVhdGgsIGJ1dCBub3QgaGltc2VsZi4=" type="audio/mpeg">
+    </audio>
+    
+    <!-- Einstein mode elements -->
+    <div class="muscular-einstein"></div>
+    <div class="einstein-speech-bubble">Relativity rocks!</div>
+    <div class="einstein-stars" id="einstein-stars"></div>
+    
+    <!-- Einstein mode sound effect -->
+    <audio id="einstein-entry-music" preload="auto">
+        <source src="data:audio/mpeg;base64,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BcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" type="audio/mpeg">
+    </audio>
+    
+    <!-- Newton mode elements -->
+    <div class="muscular-newton"></div>
+    <div class="newton-speech-bubble">Gravity is my game!</div>
+    <div class="newton-stars" id="newton-stars"></div>
+    <div class="newton-apple" id="newton-apple"></div>
+    
+    <!-- Newton mode sound effect -->
+    <audio id="newton-entry-music" preload="auto">
+        <source src="data:audio/mpeg;base64,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BcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/+3BJnIAABCADazCEcEH/11EAuIYQP/rqIBcQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" type="audio/mpeg">
+    </audio>
+    
     <div class="container">
-        <div id="chat-messages"></div>
-        <div class="input-container">
-            <textarea id="user-input"></textarea>
-            <button id="send-button">Send</button>
+        <div class="model-indicator">
+            
+            ALIEN AI
+        </div>
+        
+        <div class="chat-container">
+            <!-- Corner decorations -->
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
+            
+            <!-- Glow effect -->
+            <div class="glow"></div>
+            
+            <div id="chat-messages"></div>
+            
+            <div class="input-area">
+                <textarea id="user-input" placeholder="ENTER QUERY... (TYPE /EINSTEIN, /NEWTON OR /ALIEN TO SWITCH MODES)"></textarea>
+                <button id="send-button" aria-label="Send message">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
     
     <script src="script.js"></script>
-    <script src="fix-api-connection.js"></script>
+    <script src="alien-mode.js"></script>
     <script src="api-proxy.js"></script>
+    <script src="fix-html-tags.js"></script>
 </body>
 </html> 
