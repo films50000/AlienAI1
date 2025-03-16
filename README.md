@@ -37,4 +37,4 @@ MIT License
 
 ## Credits
 
-Created as a fun interactive chat interface with themed responses and visual effects. 
+Created as a fun interactive chat interface with themed responses and visual effects.
