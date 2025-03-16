@@ -1,31 +1,16 @@
-// Simple script to fix API connection issues by ensuring localStorage has the API key
+// Simple fix for API connection issues
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('API connection fixer initialized');
+    console.log('API connection helper initialized');
     
-    // The most likely issue is that the localStorage API key is not being used properly
-    // Let's try a simple fix by directly using the server's API key
-    const apiKeyField = document.getElementById('api-key-input');
+    // Ensure the API key is properly set
+    const storedKey = localStorage.getItem('openrouter_api_key');
+    if (!storedKey) {
+        // If no key in localStorage, restore the default one from script.js
+        const defaultKey = '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';
+        localStorage.setItem('openrouter_api_key', defaultKey);
+        console.log('Default API key restored');
+    }
     
-    // Create a wrapper around the fetch function
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options) {
-        // Check if this is a direct call to OpenRouter API
-        if (url && url.includes('openrouter.ai/api/v1/chat/completions')) {
-            console.log('Intercepting direct OpenRouter API call');
-            
-            // Redirect to our Netlify function proxy
-            return originalFetch('/api/openrouter-proxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: options ? options.body : null
-            });
-        }
-        
-        // For all other API calls, use the original fetch function
-        return originalFetch.apply(this, arguments);
-    };
-    
-    console.log('API connection fix applied: All direct OpenRouter API calls are now redirected to the serverless function proxy');
+    // Don't override fetch or other functions - just make sure the key is available
+    console.log('API connection helper completed');
 }); 
