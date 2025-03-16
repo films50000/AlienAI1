@@ -63,7 +63,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            model: 'google/gemini-2.0-pro-exp-02-05:free',
+                            model: 'anthropic/claude-3-opus:beta',
                             messages: [
                                 { role: 'system', content: enhancedPrompt },
                                 { role: 'user', content: message }
