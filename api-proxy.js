@@ -1,5 +1,26 @@
-// This script overrides the sendToOpenRouter function to use the Netlify function
+// This script ensures the API key is available and redirects API calls to the Netlify function
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('API proxy initialized');
+    
+    // First, ensure the API key is available (don't overwrite if already set)
+    const defaultKey = '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';
+    if (!localStorage.getItem('openrouter_api_key')) {
+        localStorage.setItem('openrouter_api_key', defaultKey);
+        console.log('API key initialized by api-proxy.js');
+    }
+    
+    // Add a debug helper function
+    window.checkApiKey = function() {
+        const key = localStorage.getItem('openrouter_api_key');
+        console.log('Current API key:', key ? key.substring(0, 10) + '...' : 'Not set');
+        return key;
+    };
+    
+    // Check if the fix-api-connection.js script has already applied a fetch override
+    if (window.apiConnectionFixApplied) {
+        console.log('API connection fix already applied, skipping fetch override');
+    }
+    
     // Check if sendToOpenRouter function exists
     if (typeof sendToOpenRouter === 'function') {
         console.log('Overriding sendToOpenRouter to use Netlify function');
@@ -35,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Call the Netlify function instead of OpenRouter directly
-                const response = await fetch('/.netlify/functions/openrouter-proxy', {
+                const response = await fetch('/api/openrouter-proxy', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
