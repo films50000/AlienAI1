@@ -13,11 +13,21 @@
             window.sendToOpenRouter = async function(message) {
                 try {
                     // Get the API key from localStorage
-                    const apiKey = localStorage.getItem('openrouter_api_key');
+                    let apiKey = localStorage.getItem('openrouter_api_key');
                     console.log('Using API key (first few chars):', apiKey ? apiKey.substring(0, 10) + '...' : 'not found');
                     
+                    // Validate the API key
                     if (!apiKey) {
-                        throw new Error('API key not found in localStorage');
+                        console.error('API key not found in localStorage');
+                        if (window.showApiKeyInterface) {
+                            window.showApiKeyInterface();
+                        }
+                        throw new Error('API key not found. Please set your OpenRouter API key.');
+                    }
+                    
+                    // Format the API key properly - ensure it doesn't have "Bearer " in front
+                    if (apiKey.startsWith('Bearer ')) {
+                        apiKey = apiKey.substring(7);
                     }
                     
                     // Define system prompts for different modes
@@ -44,96 +54,21 @@
                     const typingIndicator = document.getElementById('typing-indicator');
                     if (typingIndicator) typingIndicator.style.display = 'block';
                     
-                    console.log('Making direct API call to OpenRouter with Claude 3');
+                    console.log('Making direct API call to OpenRouter with Gemini model');
                     
-                    // Make direct API call to OpenRouter with Claude 3
-                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`,
-                            'HTTP-Referer': 'https://aliensai.netlify.app/',
-                            'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
-                        },
-                        body: JSON.stringify({
-                            model: 'anthropic/claude-3-opus:beta', // Using Claude 3 Opus model
-                            messages: [
-                                {
-                                    role: 'system',
-                                    content: systemPrompts[currentMode]
-                                },
-                                {
-                                    role: 'user',
-                                    content: message
-                                }
-                            ],
-                            max_tokens: 4096,
-                            temperature: 0.7,
-                            top_p: 0.9
-                        })
-                    });
-                    
-                    // Check if response is ok before parsing JSON
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error(`OpenRouter API error (${response.status}):`, errorText);
-                        
-                        // Try different models if Claude fails
-                        console.log('Direct API: Claude 3 failed, trying other models as fallback');
-                        
-                        // Try Gemini model first
-                        try {
-                            console.log('Direct API: Trying Gemini model');
-                            const geminiResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${apiKey}`,
-                                    'HTTP-Referer': 'https://aliensai.netlify.app/',
-                                    'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
-                                },
-                                body: JSON.stringify({
-                                    model: 'google/gemini-2.0-pro-exp-02-05:free',
-                                    messages: [
-                                        {
-                                            role: 'system',
-                                            content: systemPrompts[currentMode]
-                                        },
-                                        {
-                                            role: 'user',
-                                            content: message
-                                        }
-                                    ],
-                                    max_tokens: 4096,
-                                    temperature: 0.7,
-                                    top_p: 0.9
-                                })
-                            });
-                            
-                            if (geminiResponse.ok) {
-                                const geminiData = await geminiResponse.json();
-                                // Hide typing indicator
-                                if (typingIndicator) typingIndicator.style.display = 'none';
-                                console.log('Direct API: Gemini model succeeded');
-                                return geminiData.choices[0].message.content;
-                            } else {
-                                console.error('Gemini model failed, trying Mistral as final fallback');
-                            }
-                        } catch (geminiError) {
-                            console.error('Error with Gemini model:', geminiError);
-                        }
-                        
-                        // If Gemini fails, try Mistral as final fallback
-                        const retryResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    // Try with Gemini first since that was requested
+                    try {
+                        // First attempt with Gemini
+                        const geminiResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${apiKey}`,
                                 'HTTP-Referer': 'https://aliensai.netlify.app/',
-                                'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
+                                'X-Title': 'ALIEN CODE INTERFACE'
                             },
                             body: JSON.stringify({
-                                model: 'mistralai/mistral-large-latest', // Fallback to Mistral model
+                                model: 'google/gemini-1.5-pro-latest',
                                 messages: [
                                     {
                                         role: 'system',
@@ -150,27 +85,130 @@
                             })
                         });
                         
-                        if (!retryResponse.ok) {
-                            const retryErrorText = await retryResponse.text();
-                            console.error(`Fallback API error (${retryResponse.status}):`, retryErrorText);
-                            throw new Error(`API call failed with status ${response.status}. Fallback also failed.`);
+                        if (geminiResponse.ok) {
+                            const geminiData = await geminiResponse.json();
+                            
+                            // Hide typing indicator
+                            if (typingIndicator) typingIndicator.style.display = 'none';
+                            
+                            console.log('Direct API: Gemini model succeeded');
+                            return geminiData.choices[0].message.content;
+                        } else {
+                            const errorText = await geminiResponse.text();
+                            console.error(`Gemini API error (${geminiResponse.status}):`, errorText);
+                            
+                            // If authentication error, show API key interface
+                            if (geminiResponse.status === 401 && window.showApiKeyInterface) {
+                                window.showApiKeyInterface();
+                            }
+                            
+                            // Continue to Claude as fallback
+                            console.log('Gemini failed, trying Claude as fallback');
                         }
-                        
-                        const retryData = await retryResponse.json();
-                        
-                        // Hide typing indicator
-                        if (typingIndicator) typingIndicator.style.display = 'none';
-                        
-                        return retryData.choices[0].message.content;
+                    } catch (geminiError) {
+                        console.error('Error with Gemini model:', geminiError);
                     }
                     
-                    const data = await response.json();
-                    console.log('Received successful response from OpenRouter API');
+                    // If Gemini fails, try Claude
+                    try {
+                        console.log('Making direct API call to OpenRouter with Claude model');
+                        
+                        const claudeResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${apiKey}`,
+                                'HTTP-Referer': 'https://aliensai.netlify.app/',
+                                'X-Title': 'ALIEN CODE INTERFACE'
+                            },
+                            body: JSON.stringify({
+                                model: 'anthropic/claude-3-opus:beta',
+                                messages: [
+                                    {
+                                        role: 'system',
+                                        content: systemPrompts[currentMode]
+                                    },
+                                    {
+                                        role: 'user',
+                                        content: message
+                                    }
+                                ],
+                                max_tokens: 4096,
+                                temperature: 0.7,
+                                top_p: 0.9
+                            })
+                        });
+                        
+                        if (claudeResponse.ok) {
+                            const claudeData = await claudeResponse.json();
+                            
+                            // Hide typing indicator
+                            if (typingIndicator) typingIndicator.style.display = 'none';
+                            
+                            console.log('Direct API: Claude model succeeded');
+                            return claudeData.choices[0].message.content;
+                        } else {
+                            const errorText = await claudeResponse.text();
+                            console.error(`Claude API error (${claudeResponse.status}):`, errorText);
+                            
+                            // If authentication error, show API key interface
+                            if (claudeResponse.status === 401 && window.showApiKeyInterface) {
+                                window.showApiKeyInterface();
+                            }
+                            
+                            // Try Mistral as last resort
+                            console.log('Claude failed, trying Mistral as final fallback');
+                        }
+                    } catch (claudeError) {
+                        console.error('Error with Claude model:', claudeError);
+                    }
+                    
+                    // If both Claude and Gemini fail, try Mistral as final fallback
+                    const mistralResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`,
+                            'HTTP-Referer': 'https://aliensai.netlify.app/',
+                            'X-Title': 'ALIEN CODE INTERFACE'
+                        },
+                        body: JSON.stringify({
+                            model: 'mistralai/mistral-7b-instruct',
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: systemPrompts[currentMode]
+                                },
+                                {
+                                    role: 'user',
+                                    content: message
+                                }
+                            ],
+                            max_tokens: 2048,
+                            temperature: 0.7,
+                            top_p: 0.9
+                        })
+                    });
+                    
+                    if (!mistralResponse.ok) {
+                        const retryErrorText = await mistralResponse.text();
+                        console.error(`Mistral API error (${mistralResponse.status}):`, retryErrorText);
+                        
+                        // If all models failed with authentication errors, show API key interface
+                        if (mistralResponse.status === 401 && window.showApiKeyInterface) {
+                            window.showApiKeyInterface();
+                        }
+                        
+                        throw new Error(`All API models failed. Please check your OpenRouter API key.`);
+                    }
+                    
+                    const mistralData = await mistralResponse.json();
+                    console.log('Direct API: Mistral model succeeded as fallback');
                     
                     // Hide typing indicator
                     if (typingIndicator) typingIndicator.style.display = 'none';
                     
-                    return data.choices[0].message.content;
+                    return mistralData.choices[0].message.content;
                 } catch (error) {
                     console.error('Error in direct API call:', error);
                     
@@ -178,14 +216,12 @@
                     const typingIndicator = document.getElementById('typing-indicator');
                     if (typingIndicator) typingIndicator.style.display = 'none';
                     
-                    // Fallback to original implementation as last resort
-                    try {
-                        console.log('Falling back to original sendToOpenRouter implementation');
-                        return originalSendToOpenRouter(message);
-                    } catch (e) {
-                        console.error('Original implementation also failed:', e);
-                        return "Error connecting to the server. Please check your API key and internet connection.";
+                    // If API key is missing or invalid, prompt for a new one
+                    if (error.message.includes('API key') && window.showApiKeyInterface) {
+                        window.showApiKeyInterface();
                     }
+                    
+                    return "Error connecting to the server. Please check your API key and internet connection.";
                 }
             };
             

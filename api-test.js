@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div id="api-status">Status: Initializing...</div>
         <button id="run-test" style="background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; margin-top: 5px; cursor: pointer;">Test Claude</button>
         <button id="run-test-gemini" style="background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; margin-top: 5px; margin-left: 5px; cursor: pointer;">Test Gemini</button>
+        <button id="reset-api-key" style="background: #000; color: #f00; border: 1px solid #f00; padding: 5px; margin-top: 5px; margin-left: 5px; cursor: pointer;">Reset API Key</button>
         <div id="test-results" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
     `;
     document.body.appendChild(testInterface);
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultsEl = document.getElementById('test-results');
     const testButton = document.getElementById('run-test');
     const testGeminiButton = document.getElementById('run-test-gemini');
+    const resetApiKeyButton = document.getElementById('reset-api-key');
     
     // Add log function
     function log(message, isError = false) {
@@ -41,6 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(message);
     }
     
+    // Function to handle API key reset
+    function resetApiKey() {
+        if (window.showApiKeyInterface) {
+            window.showApiKeyInterface();
+        } else {
+            log('API key interface not available', true);
+        }
+    }
+    
     // Test API key with Claude
     async function testApiKey() {
         statusEl.textContent = 'Status: Testing API connection with Claude...';
@@ -48,11 +59,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Get the API key
-            const apiKey = localStorage.getItem('openrouter_api_key');
+            let apiKey = localStorage.getItem('openrouter_api_key');
             log(`API Key (first few chars): ${apiKey ? apiKey.substring(0, 10) + '...' : 'NOT FOUND'}`);
             
             if (!apiKey) {
                 throw new Error('API key not found in localStorage');
+            }
+            
+            // Make sure the API key is properly formatted without "Bearer " prefix
+            if (apiKey.startsWith('Bearer ')) {
+                apiKey = apiKey.substring(7);
             }
             
             // Try to make a simple request to OpenRouter
@@ -64,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`,
                     'HTTP-Referer': 'https://aliensai.netlify.app/',
-                    'X-Title': 'ALIEN CODE INTERFACE TEST'
+                    'X-Title': 'ALIEN CODE INTERFACE' // Simplified title
                 },
                 body: JSON.stringify({
                     model: 'anthropic/claude-3-haiku',
@@ -84,6 +100,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             log(`Response status: ${response.status}`);
+            
+            if (response.status === 401) {
+                const errorText = await response.text();
+                log(`Authentication error: ${errorText}`, true);
+                
+                // Show API key interface
+                if (window.showApiKeyInterface) {
+                    window.showApiKeyInterface();
+                }
+                
+                throw new Error('API key authentication failed. Please check your OpenRouter API key.');
+            }
             
             const data = await response.text();
             log('Response received');
@@ -122,11 +150,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Get the API key
-            const apiKey = localStorage.getItem('openrouter_api_key');
+            let apiKey = localStorage.getItem('openrouter_api_key');
             log(`API Key (first few chars): ${apiKey ? apiKey.substring(0, 10) + '...' : 'NOT FOUND'}`);
             
             if (!apiKey) {
                 throw new Error('API key not found in localStorage');
+            }
+            
+            // Make sure the API key is properly formatted without "Bearer " prefix
+            if (apiKey.startsWith('Bearer ')) {
+                apiKey = apiKey.substring(7);
             }
             
             // Try to make a simple request to OpenRouter
@@ -138,10 +171,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`,
                     'HTTP-Referer': 'https://aliensai.netlify.app/',
-                    'X-Title': 'ALIEN CODE INTERFACE TEST'
+                    'X-Title': 'ALIEN CODE INTERFACE' // Simplified title
                 },
                 body: JSON.stringify({
-                    model: 'google/gemini-2.0-pro-exp-02-05:free',
+                    model: 'google/gemini-1.5-pro-latest', // Updated to Gemini 1.5 which is more widely available
                     messages: [
                         {
                             role: 'system',
@@ -158,6 +191,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             log(`Response status: ${response.status}`);
+            
+            if (response.status === 401) {
+                const errorText = await response.text();
+                log(`Authentication error: ${errorText}`, true);
+                
+                // Show API key interface
+                if (window.showApiKeyInterface) {
+                    window.showApiKeyInterface();
+                }
+                
+                throw new Error('API key authentication failed. Please check your OpenRouter API key.');
+            }
             
             const data = await response.text();
             log('Response received');
@@ -192,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add button event listeners
     testButton.addEventListener('click', testApiKey);
     testGeminiButton.addEventListener('click', testGeminiApi);
+    resetApiKeyButton.addEventListener('click', resetApiKey);
     
     // Run test automatically after a short delay
     setTimeout(testApiKey, 1000);
