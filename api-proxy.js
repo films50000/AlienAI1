@@ -76,10 +76,23 @@
                     
                     // Check if response is OK
                     if (!response.ok) {
-                        console.log('API Proxy: Netlify function failed, falling back to original implementation');
+                        console.log(`API Proxy: Netlify function failed with status ${response.status}`);
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
+                        
+                        try {
+                            const errorJson = JSON.parse(errorText);
+                            console.error('Parsed error:', errorJson);
+                        } catch (e) {
+                            // If it's not JSON, just log the text
+                            console.error('Response was not JSON');
+                        }
+                        
                         // Hide typing indicator
                         if (typingIndicator) typingIndicator.style.display = 'none';
-                        // Fall back to original implementation
+                        
+                        // Try direct API call as fallback
+                        console.log('API Proxy: Attempting direct API call as fallback');
                         return originalSendToOpenRouter(message);
                     }
                     
