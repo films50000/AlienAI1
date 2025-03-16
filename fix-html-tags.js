@@ -24,13 +24,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Watch for new messages being added to the DOM
-    document.addEventListener('DOMNodeInserted', function(e) {
-        if (e.target && (e.target.classList && e.target.classList.contains('ai-message') || 
-                         e.target.querySelector && e.target.querySelector('.ai-message'))) {
-            fixHtmlTagsInMessages();
-        }
-    });
+    // Set up a MutationObserver to watch for changes to the DOM
+    const chatMessages = document.getElementById('chat-messages');
+    
+    if (chatMessages) {
+        // Create a new MutationObserver
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    // Check if the added node is an AI message or contains one
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.classList && node.classList.contains('ai-message') || 
+                            (node.querySelector && node.querySelector('.ai-message'))) {
+                            fixHtmlTagsInMessages();
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Configure the observer to watch for child additions
+        observer.observe(chatMessages, {
+            childList: true,
+            subtree: true
+        });
+    }
     
     // Also fix any messages that might already be in the DOM when the page loads
     fixHtmlTagsInMessages();
