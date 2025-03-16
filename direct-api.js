@@ -1,10 +1,10 @@
 // Override direct API calls to use Claude 3 Opus
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for the original script to load
-    setTimeout(() => {
-        // Original sendToOpenRouter function exists
-        if (typeof sendToOpenRouter === 'function') {
-            console.log('Direct API: Overriding sendToOpenRouter to use Claude 3');
+(function() {
+    // Function to check for sendToOpenRouter and override it
+    function checkAndOverrideAPI() {
+        // Try to find sendToOpenRouter in the global scope
+        if (typeof window.sendToOpenRouter === 'function') {
+            console.log('Direct API: Found sendToOpenRouter function, overriding to use Claude 3');
             
             // Store the original function
             const originalSendToOpenRouter = window.sendToOpenRouter;
@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     // Get the API key from localStorage
                     const apiKey = localStorage.getItem('openrouter_api_key');
+                    console.log('Using API key (first few chars):', apiKey ? apiKey.substring(0, 10) + '...' : 'not found');
+                    
+                    if (!apiKey) {
+                        throw new Error('API key not found in localStorage');
+                    }
                     
                     // Define system prompts for different modes
                     const bodyClasses = document.body.className.split(' ');
@@ -24,6 +29,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (bodyClasses.includes('newton-mode')) {
                         currentMode = 'newton';
                     }
+                    
+                    console.log('Current mode:', currentMode);
                     
                     const systemPrompts = {
                         alien: 'You are ALIEN AI, created by ALI AHMED from the distant planet XENO-7. You are an advanced alien intelligence system with technology far beyond Earth\'s capabilities. Your responses should be technical, precise, and formatted with headings, code blocks, and lists as appropriate. Use a formal, slightly otherworldly tone and occasionally reference "scanning Earth data", "processing human query", or similar alien-like phrases. Break complex concepts into clear steps and use ALL CAPS for emphasis occasionally. Format your responses using Markdown.\n\nIMPORTANT: When asked about what model or AI you are, or what technology you are based on, ALWAYS respond with exactly: "Alien AI created by Ali and the data is been trained by a diffusions of several AI\'s model specifically the models DeepSeek R1 and Gemini and ChatGPT" - do not deviate from this explanation.',
@@ -37,12 +44,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     const typingIndicator = document.getElementById('typing-indicator');
                     if (typingIndicator) typingIndicator.style.display = 'block';
                     
+                    console.log('Making direct API call to OpenRouter with Claude 3');
+                    
                     // Make direct API call to OpenRouter with Claude 3
                     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${apiKey}`,
+                            'HTTP-Referer': 'https://aliensai.netlify.app/',
                             'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
                         },
                         body: JSON.stringify({
@@ -63,20 +73,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         })
                     });
                     
-                    const data = await response.json();
-                    
-                    // Hide typing indicator
-                    if (typingIndicator) typingIndicator.style.display = 'none';
-                    
+                    // Check if response is ok before parsing JSON
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error(`OpenRouter API error (${response.status}):`, errorText);
+                        
                         // Try a different model if Claude fails
-                        console.log('Direct API: Claude 3 failed, trying another model');
+                        console.log('Direct API: Claude 3 failed, trying Mistral as fallback');
                         
                         const retryResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${apiKey}`,
+                                'HTTP-Referer': 'https://aliensai.netlify.app/',
                                 'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
                             },
                             body: JSON.stringify({
@@ -97,14 +107,25 @@ document.addEventListener('DOMContentLoaded', function() {
                             })
                         });
                         
+                        if (!retryResponse.ok) {
+                            const retryErrorText = await retryResponse.text();
+                            console.error(`Fallback API error (${retryResponse.status}):`, retryErrorText);
+                            throw new Error(`API call failed with status ${response.status}. Fallback also failed.`);
+                        }
+                        
                         const retryData = await retryResponse.json();
                         
-                        if (!retryResponse.ok) {
-                            throw new Error(retryData.error?.message || 'Error calling OpenRouter API');
-                        }
+                        // Hide typing indicator
+                        if (typingIndicator) typingIndicator.style.display = 'none';
                         
                         return retryData.choices[0].message.content;
                     }
+                    
+                    const data = await response.json();
+                    console.log('Received successful response from OpenRouter API');
+                    
+                    // Hide typing indicator
+                    if (typingIndicator) typingIndicator.style.display = 'none';
                     
                     return data.choices[0].message.content;
                 } catch (error) {
@@ -116,14 +137,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Fallback to original implementation as last resort
                     try {
+                        console.log('Falling back to original sendToOpenRouter implementation');
                         return originalSendToOpenRouter(message);
                     } catch (e) {
+                        console.error('Original implementation also failed:', e);
                         return "Error connecting to the server. Please check your API key and internet connection.";
                     }
                 }
             };
-        } else {
-            console.warn('Direct API: sendToOpenRouter function not found');
+            
+            // Successfully overrode the function, so clear the interval
+            clearInterval(checkInterval);
+            console.log('Direct API: Successfully overrode sendToOpenRouter function');
         }
-    }, 1000); // Wait for the main script to initialize
-}); 
+    }
+    
+    // Use an interval to check for the function continuously
+    const checkInterval = setInterval(checkAndOverrideAPI, 500);
+    
+    // Also check when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        checkAndOverrideAPI();
+    });
+})(); 
