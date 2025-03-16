@@ -1,20 +1,14 @@
 [build]
-  # Directory with the built site
   publish = "."
-  # Directory with the functions code
   functions = "netlify/functions"
 
-# Redirect for Netlify Functions
+[functions]
+  node_bundler = "esbuild"
+
+[dev]
+  functions = "netlify/functions"
+  
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
-
-# Ensure CORS settings
-[[headers]]
-  for = "/api/*"
-    [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS" 
+  status = 200 

@@ -1,13 +1,14 @@
 {
   "name": "alienai",
   "version": "1.0.0",
-  "description": "AI-Enhanced Knowledge Base Chat Interface",
-  "main": "index.html",
+  "description": "Alien AI Interface - A futuristic AI chat application with Einstein and Newton modes",
   "scripts": {
-    "start": "netlify dev"
+    "dev": "netlify dev"
   },
   "dependencies": {
-    "axios": "^1.6.0",
-    "node-fetch": "^2.7.0"
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^16.0.0"
   }
 }

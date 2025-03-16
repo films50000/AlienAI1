@@ -1,8 +1,9 @@
 {
-  "name": "alien-ai-netlify-functions",
+  "name": "alienai-functions",
   "version": "1.0.0",
-  "description": "Netlify functions for Alien AI project",
+  "description": "Serverless functions for AlienAI Interface",
+  "main": "index.js",
   "dependencies": {
-    "node-fetch": "^2.6.1"
+    "axios": "^1.6.0"
   }
 } 

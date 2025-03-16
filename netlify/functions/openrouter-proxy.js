@@ -1,27 +1,11 @@
-const fetch = require('node-fetch');
+const axios = require('axios');
 
-// Netlify function to proxy requests to OpenRouter
+// This function will be our proxy to OpenRouter
 exports.handler = async function(event, context) {
-  // Set CORS headers for all responses
-  const headers = {
-    'Access-Control-Allow-Origin': '*', // Allow any origin - restrict this in production
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-  };
-
-  // Handle OPTIONS request (preflight)
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers
-    };
-  }
-
-  // Only allow POST requests
+  // Only accept POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers,
       body: JSON.stringify({ error: 'Method Not Allowed' })
     };
   }
@@ -30,60 +14,46 @@ exports.handler = async function(event, context) {
     // Parse the request body
     const requestBody = JSON.parse(event.body);
     
-    // Get the API key from environment variables
-    const API_KEY = process.env.OPENROUTER_API_KEY;
+    // Your OpenRouter API key - this will be stored as an environment variable in Netlify
+    const apiKey = process.env.OPENROUTER_API_KEY;
     
-    console.log('Function triggered. API key exists:', !!API_KEY);
-
-    // Check if API key is configured
-    if (!API_KEY) {
-      console.error('OpenRouter API key is not configured');
+    if (!apiKey) {
       return {
         statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          error: 'Server configuration error',
-          message: 'OpenRouter API key is not configured'
-        })
+        body: JSON.stringify({ error: 'API key not configured' })
       };
     }
-
-    // Make request to OpenRouter API
-    console.log('Making request to OpenRouter API');
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
-        'HTTP-Referer': 'https://aliensai.netlify.app/',
-        'X-Title': 'Alien AI'
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    // Get response data
-    const data = await response.json();
     
-    console.log('Received response from OpenRouter API:', 
-                response.status, 
-                Object.keys(data).join(', '));
-
+    // Make the request to OpenRouter
+    const response = await axios({
+      method: 'post',
+      url: 'https://openrouter.ai/api/v1/chat/completions',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
+      },
+      data: requestBody
+    });
+    
     // Return the response from OpenRouter
     return {
-      statusCode: response.status,
-      headers,
-      body: JSON.stringify(data)
+      statusCode: 200,
+      body: JSON.stringify(response.data)
     };
   } catch (error) {
-    console.error('Error in OpenRouter proxy:', error);
+    // Handle errors
+    console.error('Error calling OpenRouter:', error.message);
     
+    // Return a formatted error response
     return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        error: 'Internal Server Error',
-        message: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      statusCode: error.response?.status || 500,
+      body: JSON.stringify({
+        error: {
+          message: error.response?.data?.error?.message || error.message,
+          type: error.response?.data?.error?.type || 'ServerError',
+          code: error.response?.status || 500
+        }
       })
     };
   }
