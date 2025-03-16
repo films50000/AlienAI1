@@ -78,9 +78,52 @@
                         const errorText = await response.text();
                         console.error(`OpenRouter API error (${response.status}):`, errorText);
                         
-                        // Try a different model if Claude fails
-                        console.log('Direct API: Claude 3 failed, trying Mistral as fallback');
+                        // Try different models if Claude fails
+                        console.log('Direct API: Claude 3 failed, trying other models as fallback');
                         
+                        // Try Gemini model first
+                        try {
+                            console.log('Direct API: Trying Gemini model');
+                            const geminiResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${apiKey}`,
+                                    'HTTP-Referer': 'https://aliensai.netlify.app/',
+                                    'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
+                                },
+                                body: JSON.stringify({
+                                    model: 'google/gemini-2.0-pro-exp-02-05:free',
+                                    messages: [
+                                        {
+                                            role: 'system',
+                                            content: systemPrompts[currentMode]
+                                        },
+                                        {
+                                            role: 'user',
+                                            content: message
+                                        }
+                                    ],
+                                    max_tokens: 4096,
+                                    temperature: 0.7,
+                                    top_p: 0.9
+                                })
+                            });
+                            
+                            if (geminiResponse.ok) {
+                                const geminiData = await geminiResponse.json();
+                                // Hide typing indicator
+                                if (typingIndicator) typingIndicator.style.display = 'none';
+                                console.log('Direct API: Gemini model succeeded');
+                                return geminiData.choices[0].message.content;
+                            } else {
+                                console.error('Gemini model failed, trying Mistral as final fallback');
+                            }
+                        } catch (geminiError) {
+                            console.error('Error with Gemini model:', geminiError);
+                        }
+                        
+                        // If Gemini fails, try Mistral as final fallback
                         const retryResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                             method: 'POST',
                             headers: {

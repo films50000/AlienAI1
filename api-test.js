@@ -19,7 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
     testInterface.innerHTML = `
         <h3 style="margin: 0; color: #0f0;">API Connection Test</h3>
         <div id="api-status">Status: Initializing...</div>
-        <button id="run-test" style="background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; margin-top: 5px; cursor: pointer;">Run Test</button>
+        <button id="run-test" style="background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; margin-top: 5px; cursor: pointer;">Test Claude</button>
+        <button id="run-test-gemini" style="background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; margin-top: 5px; margin-left: 5px; cursor: pointer;">Test Gemini</button>
         <div id="test-results" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
     `;
     document.body.appendChild(testInterface);
@@ -28,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusEl = document.getElementById('api-status');
     const resultsEl = document.getElementById('test-results');
     const testButton = document.getElementById('run-test');
+    const testGeminiButton = document.getElementById('run-test-gemini');
     
     // Add log function
     function log(message, isError = false) {
@@ -39,9 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(message);
     }
     
-    // Test API key
+    // Test API key with Claude
     async function testApiKey() {
-        statusEl.textContent = 'Status: Testing API connection...';
+        statusEl.textContent = 'Status: Testing API connection with Claude...';
         resultsEl.innerHTML = '';
         
         try {
@@ -54,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Try to make a simple request to OpenRouter
-            log('Testing connection to OpenRouter...');
+            log('Testing connection to OpenRouter with Claude model...');
             
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
@@ -113,8 +115,83 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Add button event listener
+    // Test API key with Gemini
+    async function testGeminiApi() {
+        statusEl.textContent = 'Status: Testing API connection with Gemini...';
+        resultsEl.innerHTML = '';
+        
+        try {
+            // Get the API key
+            const apiKey = localStorage.getItem('openrouter_api_key');
+            log(`API Key (first few chars): ${apiKey ? apiKey.substring(0, 10) + '...' : 'NOT FOUND'}`);
+            
+            if (!apiKey) {
+                throw new Error('API key not found in localStorage');
+            }
+            
+            // Try to make a simple request to OpenRouter
+            log('Testing connection to OpenRouter with Gemini model...');
+            
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                    'HTTP-Referer': 'https://aliensai.netlify.app/',
+                    'X-Title': 'ALIEN CODE INTERFACE TEST'
+                },
+                body: JSON.stringify({
+                    model: 'google/gemini-2.0-pro-exp-02-05:free',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are a helpful assistant.'
+                        },
+                        {
+                            role: 'user',
+                            content: 'Hello, this is a test message to check if the API connection is working. Please respond with a simple confirmation.'
+                        }
+                    ],
+                    max_tokens: 100,
+                    temperature: 0.7
+                })
+            });
+            
+            log(`Response status: ${response.status}`);
+            
+            const data = await response.text();
+            log('Response received');
+            
+            try {
+                const jsonData = JSON.parse(data);
+                if (jsonData.error) {
+                    throw new Error(jsonData.error.message || 'Unknown API error');
+                }
+                
+                // Check if we got a proper response
+                if (jsonData.choices && jsonData.choices[0] && jsonData.choices[0].message) {
+                    const content = jsonData.choices[0].message.content;
+                    log(`Success! Gemini response: "${content.substring(0, 50)}..."`);
+                    statusEl.textContent = 'Status: Gemini API connection successful';
+                    statusEl.style.color = '#0f0';
+                } else {
+                    throw new Error('Unexpected response format');
+                }
+            } catch (jsonError) {
+                log(`Error parsing response: ${jsonError.message}`, true);
+                log(`Raw response: ${data.substring(0, 300)}...`, true);
+                throw new Error('Failed to parse API response');
+            }
+        } catch (error) {
+            log(`Error: ${error.message}`, true);
+            statusEl.textContent = `Status: Error - ${error.message}`;
+            statusEl.style.color = '#f00';
+        }
+    }
+    
+    // Add button event listeners
     testButton.addEventListener('click', testApiKey);
+    testGeminiButton.addEventListener('click', testGeminiApi);
     
     // Run test automatically after a short delay
     setTimeout(testApiKey, 1000);

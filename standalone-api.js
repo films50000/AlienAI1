@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Try multiple models in sequence
             const models = [
+                'google/gemini-2.0-pro-exp-02-05:free',
                 'anthropic/claude-3-haiku',
                 'mistralai/mistral-7b-instruct',
                 'google/gemma-2-9b-it'
