@@ -1,0 +1,8 @@
+{
+  "name": "alien-ai-netlify-functions",
+  "version": "1.0.0",
+  "description": "Netlify functions for Alien AI project",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+} 
