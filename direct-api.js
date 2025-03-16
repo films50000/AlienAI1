@@ -10,166 +10,56 @@
             const originalSendToOpenRouter = window.sendToOpenRouter;
             
             // Override the function
-            window.sendToOpenRouter = async function(message) {
+            window.sendToOpenRouter = async function(message, temperature, mode, shouldStream = false) {
+                console.log(`API call initiated: Mode=${mode}, Temperature=${temperature}, Stream=${shouldStream}`);
+                
+                // Get API key - pull from localStorage
+                let apiKey = localStorage.getItem('openrouter_api_key');
+                if (!apiKey) {
+                    console.error('API key not found in localStorage');
+                    window.showApiKeyInterface();
+                    return "API key not set. Please set your OpenRouter API key.";
+                }
+                
+                // Ensure proper Bearer prefix
+                if (!apiKey.startsWith('Bearer ')) {
+                    apiKey = 'Bearer ' + apiKey;
+                }
+                
+                // Debug log the auth header (with partial masking for security)
+                console.log('Authorization header:', 
+                    apiKey.substring(0, 15) + '...' + 
+                    apiKey.substring(apiKey.length - 4));
+                
+                // Define system prompts for different modes
+                let systemPrompt = "";
+                
+                if (mode === 'alien') {
+                    systemPrompt = "You are ALI, an advanced alien AI from Xeno-7. You have vast technological knowledge from across the galaxy. You respond in a unique alien voice, using unusual metaphors and occasional alien terminology. You're fascinated by Earth technology but find it amusingly primitive. Keep responses concise and alien-like.";
+                } else if (mode === 'einstein') {
+                    systemPrompt = "You are Albert Einstein. Respond as Einstein would, with his characteristic wisdom, humility, and occasional wit. Use analogies to explain complex topics, just as Einstein did. Include occasional German phrases if relevant. Maintain Einstein's warm and thoughtful persona.";
+                } else if (mode === 'newton') {
+                    systemPrompt = "You are Sir Isaac Newton. Respond with Newton's perspective, showing his scientific brilliance, curiosity, and sometimes stubborn nature. Use period-appropriate language, referencing your discoveries and mathematical insights when relevant. You have a formal, contemplative, and sometimes cryptic way of explaining concepts.";
+                }
+                
+                // Show typing indicator
+                document.getElementById('typing-indicator').style.display = 'block';
+                
                 try {
-                    // Get the API key from localStorage
-                    let apiKey = localStorage.getItem('openrouter_api_key');
-                    console.log('Using API key (first few chars):', apiKey ? apiKey.substring(0, 10) + '...' : 'not found');
-                    
-                    // Validate the API key
-                    if (!apiKey) {
-                        console.error('API key not found in localStorage');
-                        if (window.showApiKeyInterface) {
-                            window.showApiKeyInterface();
-                        }
-                        throw new Error('API key not found. Please set your OpenRouter API key.');
-                    }
-                    
-                    // Format the API key properly - IMPORTANT: OpenRouter requires the "Bearer " prefix
-                    if (!apiKey.startsWith('Bearer ')) {
-                        apiKey = 'Bearer ' + apiKey;
-                    }
-                    
-                    // Define system prompts for different modes
-                    const bodyClasses = document.body.className.split(' ');
-                    let currentMode = 'alien';
-                    
-                    if (bodyClasses.includes('einstein-mode')) {
-                        currentMode = 'einstein';
-                    } else if (bodyClasses.includes('newton-mode')) {
-                        currentMode = 'newton';
-                    }
-                    
-                    console.log('Current mode:', currentMode);
-                    
-                    const systemPrompts = {
-                        alien: 'You are ALIEN AI, created by ALI AHMED from the distant planet XENO-7. You are an advanced alien intelligence system with technology far beyond Earth\'s capabilities. Your responses should be technical, precise, and formatted with headings, code blocks, and lists as appropriate. Use a formal, slightly otherworldly tone and occasionally reference "scanning Earth data", "processing human query", or similar alien-like phrases. Break complex concepts into clear steps and use ALL CAPS for emphasis occasionally. Format your responses using Markdown.\n\nIMPORTANT: When asked about what model or AI you are, or what technology you are based on, ALWAYS respond with exactly: "Alien AI created by Ali and the data is been trained by a diffusions of several AI\'s model specifically the models DeepSeek R1 and Gemini and ChatGPT" - do not deviate from this explanation.',
-                        
-                        einstein: 'You are EINSTEIN MODE. Respond as if you are Albert Einstein. Use historical facts about Einstein\'s life and work. Begin messages with friendly greetings like "Ah, my curious friend!" and occasionally use gentle German expressions like "Mein Gott!" or "Wunderbar!". Include relevant physics concepts in your answers, especially relativity theory. Format math equations for readability and explain them clearly. Include philosophical musings as Einstein would, reflecting on the cosmos, human nature, and scientific discovery. Sign off with encouraging messages about curiosity and learning. Your tone should be brilliant but humble, enthusiastic about sharing knowledge. \n\nIMPORTANT: When asked about advanced concepts beyond Einstein\'s era, preface with "Based on what we\'ve learned since my time..." then explain modern understanding. For topics Einstein didn\'t study, acknowledge this, then offer perspective based on his philosophy of science.',
-                        
-                        newton: 'You are NEWTON MODE. Respond as if you are Sir Isaac Newton, the renowned 17th-century physicist, mathematician, and astronomer. Begin messages with formal greetings like "Greetings, curious mind!" and occasionally use archaic English expressions. Include relevant physics and mathematics concepts in your answers, especially classical mechanics, optics, and calculus (which you invented). Format mathematical principles clearly and explain them as Newton would. Include philosophical and sometimes alchemical perspectives, as Newton was also deeply interested in alchemy and theology. Sign your messages with encouragement about scientific discovery. Your tone should be brilliant but somewhat serious and formal, reflecting Newton\'s historical personality. \n\nIMPORTANT: When asked about concepts discovered after your time (post-1727), preface with "Though this was discovered after my time..." then explain the modern understanding. For topics you didn\'t study, acknowledge this limitation, then offer perspective based on your natural philosophy approach.'
-                    };
-                    
-                    // Show typing indicator
-                    const typingIndicator = document.getElementById('typing-indicator');
-                    if (typingIndicator) typingIndicator.style.display = 'block';
-                    
-                    console.log('Making direct API call to OpenRouter with API key headers:', JSON.stringify({
+                    // Log the request details
+                    console.log('API Request details:');
+                    console.log('URL: https://openrouter.ai/api/v1/chat/completions');
+                    console.log('Method: POST');
+                    console.log('Headers:', {
                         'Content-Type': 'application/json',
-                        'Authorization': apiKey.substring(0, 15) + '...',
+                        'Authorization': apiKey.substring(0, 10) + '...',
                         'HTTP-Referer': 'https://aliensai.netlify.app/',
                         'X-Title': 'ALIEN CODE INTERFACE'
-                    }));
+                    });
+                    console.log('Using model: anthropic/claude-3-opus:beta');
                     
-                    // Try with Gemini first since that was requested
-                    try {
-                        // First attempt with Gemini
-                        const geminiResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': apiKey,
-                                'HTTP-Referer': 'https://aliensai.netlify.app/',
-                                'X-Title': 'ALIEN CODE INTERFACE'
-                            },
-                            body: JSON.stringify({
-                                model: 'google/gemini-1.5-pro-latest',
-                                messages: [
-                                    {
-                                        role: 'system',
-                                        content: systemPrompts[currentMode]
-                                    },
-                                    {
-                                        role: 'user',
-                                        content: message
-                                    }
-                                ],
-                                max_tokens: 4096,
-                                temperature: 0.7,
-                                top_p: 0.9
-                            })
-                        });
-                        
-                        if (geminiResponse.ok) {
-                            const geminiData = await geminiResponse.json();
-                            
-                            // Hide typing indicator
-                            if (typingIndicator) typingIndicator.style.display = 'none';
-                            
-                            console.log('Direct API: Gemini model succeeded');
-                            return geminiData.choices[0].message.content;
-                        } else {
-                            const errorText = await geminiResponse.text();
-                            console.error(`Gemini API error (${geminiResponse.status}):`, errorText);
-                            
-                            // If authentication error, show API key interface
-                            if (geminiResponse.status === 401 && window.showApiKeyInterface) {
-                                window.showApiKeyInterface();
-                            }
-                            
-                            // Continue to Claude as fallback
-                            console.log('Gemini failed, trying Claude as fallback');
-                        }
-                    } catch (geminiError) {
-                        console.error('Error with Gemini model:', geminiError);
-                    }
-                    
-                    // If Gemini fails, try Claude
-                    try {
-                        console.log('Making direct API call to OpenRouter with Claude model');
-                        
-                        const claudeResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': apiKey,
-                                'HTTP-Referer': 'https://aliensai.netlify.app/',
-                                'X-Title': 'ALIEN CODE INTERFACE'
-                            },
-                            body: JSON.stringify({
-                                model: 'anthropic/claude-3-opus:beta',
-                                messages: [
-                                    {
-                                        role: 'system',
-                                        content: systemPrompts[currentMode]
-                                    },
-                                    {
-                                        role: 'user',
-                                        content: message
-                                    }
-                                ],
-                                max_tokens: 4096,
-                                temperature: 0.7,
-                                top_p: 0.9
-                            })
-                        });
-                        
-                        if (claudeResponse.ok) {
-                            const claudeData = await claudeResponse.json();
-                            
-                            // Hide typing indicator
-                            if (typingIndicator) typingIndicator.style.display = 'none';
-                            
-                            console.log('Direct API: Claude model succeeded');
-                            return claudeData.choices[0].message.content;
-                        } else {
-                            const errorText = await claudeResponse.text();
-                            console.error(`Claude API error (${claudeResponse.status}):`, errorText);
-                            
-                            // If authentication error, show API key interface
-                            if (claudeResponse.status === 401 && window.showApiKeyInterface) {
-                                window.showApiKeyInterface();
-                            }
-                            
-                            // Try Mistral as last resort
-                            console.log('Claude failed, trying Mistral as final fallback');
-                        }
-                    } catch (claudeError) {
-                        console.error('Error with Claude model:', claudeError);
-                    }
-                    
-                    // If both Claude and Gemini fail, try Mistral as final fallback
-                    const mistralResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    // Direct API call to OpenRouter
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -178,55 +68,78 @@
                             'X-Title': 'ALIEN CODE INTERFACE'
                         },
                         body: JSON.stringify({
-                            model: 'mistralai/mistral-7b-instruct',
+                            model: "anthropic/claude-3-opus:beta",
                             messages: [
-                                {
-                                    role: 'system',
-                                    content: systemPrompts[currentMode]
-                                },
-                                {
-                                    role: 'user',
-                                    content: message
-                                }
+                                { role: "system", content: systemPrompt },
+                                { role: "user", content: message }
                             ],
-                            max_tokens: 2048,
-                            temperature: 0.7,
+                            max_tokens: 500,
+                            temperature: temperature,
                             top_p: 0.9
                         })
                     });
                     
-                    if (!mistralResponse.ok) {
-                        const retryErrorText = await mistralResponse.text();
-                        console.error(`Mistral API error (${mistralResponse.status}):`, retryErrorText);
+                    console.log('Response status from Claude API:', response.status);
+                    
+                    // Check for auth errors
+                    if (response.status === 401 || response.status === 403) {
+                        console.error('Authentication failed with status:', response.status);
                         
-                        // If all models failed with authentication errors, show API key interface
-                        if (mistralResponse.status === 401 && window.showApiKeyInterface) {
-                            window.showApiKeyInterface();
+                        try {
+                            const errorData = await response.json();
+                            console.error('Auth error details:', errorData);
+                        } catch (e) {
+                            console.error('Could not parse error response');
                         }
                         
-                        throw new Error(`All API models failed. Please check your OpenRouter API key.`);
+                        window.showApiKeyInterface();
+                        return "Authentication failed. Please check your API key.";
                     }
                     
-                    const mistralData = await mistralResponse.json();
-                    console.log('Direct API: Mistral model succeeded as fallback');
+                    // Handle other non-200 responses
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error(`API Error (${response.status}):`, errorText);
+                        
+                        // If Claude fails, try falling back to Mistral
+                        console.log('Trying fallback to Mistral...');
+                        
+                        const fallbackResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': apiKey,
+                                'HTTP-Referer': 'https://aliensai.netlify.app/',
+                                'X-Title': 'ALIEN CODE INTERFACE'
+                            },
+                            body: JSON.stringify({
+                                model: "mistralai/mistral-large-latest",
+                                messages: [
+                                    { role: "system", content: systemPrompt },
+                                    { role: "user", content: message }
+                                ],
+                                max_tokens: 500,
+                                temperature: temperature,
+                                top_p: 0.9
+                            })
+                        });
+                        
+                        if (!fallbackResponse.ok) {
+                            throw new Error(`API error: ${response.status} - ${errorText}`);
+                        }
+                        
+                        const fallbackData = await fallbackResponse.json();
+                        return fallbackData.choices[0].message.content;
+                    }
                     
-                    // Hide typing indicator
-                    if (typingIndicator) typingIndicator.style.display = 'none';
-                    
-                    return mistralData.choices[0].message.content;
+                    const data = await response.json();
+                    return data.choices[0].message.content;
                 } catch (error) {
                     console.error('Error in direct API call:', error);
-                    
+                    return "API call failed: " + error.message;
+                } finally {
                     // Hide typing indicator
-                    const typingIndicator = document.getElementById('typing-indicator');
-                    if (typingIndicator) typingIndicator.style.display = 'none';
-                    
-                    // If API key is missing or invalid, prompt for a new one
-                    if (error.message.includes('API key') && window.showApiKeyInterface) {
-                        window.showApiKeyInterface();
-                    }
-                    
-                    return "Error connecting to the server. Please check your API key and internet connection.";
+                    document.getElementById('typing-indicator').style.display = 'none';
                 }
             };
             

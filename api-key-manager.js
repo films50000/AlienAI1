@@ -43,12 +43,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get the current API key
     const currentApiKey = localStorage.getItem('openrouter_api_key');
     if (currentApiKey) {
-        newApiKeyInput.value = currentApiKey;
+        // Display only the first few characters for security
+        const maskedKey = currentApiKey.substring(0, 10) + '...' + currentApiKey.substring(currentApiKey.length - 4);
+        newApiKeyInput.value = '';
+        newApiKeyInput.placeholder = 'Current key: ' + maskedKey;
     }
     
     // Function to show the API key interface
     window.showApiKeyInterface = function() {
         apiKeyInterface.style.display = 'block';
+        
+        // Add status message
+        apiKeyStatusEl.textContent = 'API key authentication failed. Please enter a valid OpenRouter API key.';
+        apiKeyStatusEl.style.color = '#f00';
     };
     
     // Function to hide the API key interface
@@ -56,25 +63,46 @@ document.addEventListener('DOMContentLoaded', function() {
         apiKeyInterface.style.display = 'none';
     }
     
+    // Function to clean and validate an API key
+    function cleanApiKey(key) {
+        // Remove any whitespace
+        key = key.trim();
+        
+        // Remove 'Bearer ' prefix if present
+        if (key.startsWith('Bearer ')) {
+            key = key.substring(7).trim();
+        }
+        
+        // Validate the key format (basic check)
+        if (key.startsWith('sk-or-') && key.length > 20) {
+            return key;
+        } else {
+            console.warn('API key appears to be in an invalid format:', key.substring(0, 10) + '...');
+            return key; // Return anyway but log a warning
+        }
+    }
+    
     // Function to save the API key
     async function saveApiKey() {
-        const apiKey = newApiKeyInput.value.trim();
+        const rawApiKey = newApiKeyInput.value.trim();
         
-        if (!apiKey) {
+        if (!rawApiKey) {
             apiKeyStatusEl.textContent = 'Please enter a valid API key';
             apiKeyStatusEl.style.color = '#f00';
             return;
         }
+        
+        // Clean and validate the API key
+        const apiKey = cleanApiKey(rawApiKey);
+        console.log('Cleaned API key (first few chars):', apiKey.substring(0, 10) + '...');
         
         apiKeyStatusEl.textContent = 'Testing API key...';
         apiKeyStatusEl.style.color = '#0f0';
         
         try {
             // Format the API key with Bearer prefix for testing
-            let formattedApiKey = apiKey;
-            if (!formattedApiKey.startsWith('Bearer ')) {
-                formattedApiKey = 'Bearer ' + formattedApiKey;
-            }
+            let formattedApiKey = 'Bearer ' + apiKey;
+            console.log('Testing with formatted key (first chars):', formattedApiKey.substring(0, 20) + '...');
             
             // Test the API key with a simple request
             const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
@@ -86,14 +114,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
+            console.log('API key validation response status:', response.status);
+            
             if (response.ok) {
-                // Save the API key to localStorage without the Bearer prefix (our code adds it)
-                let storageApiKey = apiKey;
-                if (storageApiKey.startsWith('Bearer ')) {
-                    storageApiKey = storageApiKey.substring(7).trim();
-                }
-                
-                localStorage.setItem('openrouter_api_key', storageApiKey);
+                // Store just the raw API key (without Bearer prefix)
+                localStorage.setItem('openrouter_api_key', apiKey);
+                console.log('API key saved to localStorage (first chars):', apiKey.substring(0, 10) + '...');
                 
                 apiKeyStatusEl.textContent = 'API key saved successfully! Reloading page...';
                 apiKeyStatusEl.style.color = '#0f0';
@@ -116,10 +142,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMessage = data || 'Unknown error';
                 }
                 
+                console.error('API key validation error:', errorMessage);
                 apiKeyStatusEl.textContent = `Error: ${errorMessage}`;
                 apiKeyStatusEl.style.color = '#f00';
             }
         } catch (error) {
+            console.error('Error testing API key:', error);
             apiKeyStatusEl.textContent = `Error: ${error.message}`;
             apiKeyStatusEl.style.color = '#f00';
         }
@@ -154,6 +182,19 @@ document.addEventListener('DOMContentLoaded', function() {
     apiKeyButton.addEventListener('click', showApiKeyInterface);
     document.body.appendChild(apiKeyButton);
     
+    // Add direct test function to window for console testing
+    window.testApiKeyFormatting = function() {
+        const storedKey = localStorage.getItem('openrouter_api_key');
+        console.log('Raw stored key:', storedKey);
+        
+        let formatted = storedKey;
+        if (!formatted.startsWith('Bearer ')) {
+            formatted = 'Bearer ' + formatted;
+        }
+        
+        console.log('Formatted for API use:', formatted);
+    };
+    
     // Add API Key check function to window for other scripts to use
     window.checkApiKey = async function() {
         const apiKey = localStorage.getItem('openrouter_api_key');
@@ -166,10 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Format API key with Bearer prefix for validation
-            let formattedApiKey = apiKey;
-            if (!formattedApiKey.startsWith('Bearer ')) {
-                formattedApiKey = 'Bearer ' + formattedApiKey;
-            }
+            let formattedApiKey = 'Bearer ' + apiKey;
+            console.log('Checking API key (first chars):', formattedApiKey.substring(0, 20) + '...');
             
             // Test if the key is valid (just a GET request to check, no tokens used)
             const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
@@ -199,14 +238,10 @@ document.addEventListener('DOMContentLoaded', function() {
     window.formatApiKey = function(apiKey) {
         if (!apiKey) return null;
         
-        // Make sure the API key is properly formatted with Bearer prefix
-        if (apiKey.startsWith('Bearer ')) {
-            return apiKey;
-        } else if (apiKey.startsWith('sk-or-')) {
-            return 'Bearer ' + apiKey; // Add Bearer prefix for OpenRouter
-        } else {
-            console.warn('API key has unexpected format');
-            return 'Bearer ' + apiKey; // Add Bearer prefix anyway
-        }
+        // Clean the API key first
+        apiKey = cleanApiKey(apiKey);
+        
+        // Always return with Bearer prefix
+        return 'Bearer ' + apiKey;
     };
 }); 
