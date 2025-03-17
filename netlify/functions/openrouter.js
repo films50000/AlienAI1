@@ -1,15 +1,12 @@
 const axios = require('axios');
 
-exports.handler = async (event, context) => {
-  // Only allow POST requests
+// This function will be our proxy to OpenRouter
+exports.handler = async function(event, context) {
+  // Only accept POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' }),
-      headers: {
-        'Allow': 'POST',
-        'Content-Type': 'application/json'
-      }
+      body: JSON.stringify({ error: 'Method Not Allowed' })
     };
   }
 
@@ -17,53 +14,47 @@ exports.handler = async (event, context) => {
     // Parse the request body
     const requestBody = JSON.parse(event.body);
     
-    // Get the OpenRouter API key from environment variables
+    // Your OpenRouter API key - this will be stored as an environment variable in Netlify
     const apiKey = process.env.OPENROUTER_API_KEY;
     
     if (!apiKey) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'API key not configured' }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        body: JSON.stringify({ error: 'API key not configured' })
       };
     }
-
-    // Make the request to OpenRouter API
-    const response = await axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
-      requestBody.data,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': requestBody.referer || 'https://alienai-interface.netlify.app',
-          'X-Title': 'AlienAI Interface'
-        }
-      }
-    );
-
+    
+    // Make the request to OpenRouter
+    const response = await axios({
+      method: 'post',
+      url: 'https://openrouter.ai/api/v1/chat/completions',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
+      },
+      data: requestBody
+    });
+    
     // Return the response from OpenRouter
     return {
       statusCode: 200,
-      body: JSON.stringify(response.data),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      body: JSON.stringify(response.data)
     };
   } catch (error) {
-    console.error('Error calling OpenRouter API:', error);
+    // Handle errors
+    console.error('Error calling OpenRouter:', error.message);
     
+    // Return a formatted error response
     return {
       statusCode: error.response?.status || 500,
       body: JSON.stringify({
-        error: error.message,
-        details: error.response?.data
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+        error: {
+          message: error.response?.data?.error?.message || error.message,
+          type: error.response?.data?.error?.type || 'ServerError',
+          code: error.response?.status || 500
+        }
+      })
     };
   }
 }; 

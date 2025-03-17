@@ -61,31 +61,26 @@ async function sendToOpenRouter(message) {
             }
         }
         
-        // Rather than using localStorage for API key, we'll use the serverless function
-        // Call our Netlify serverless function
         const response = await fetch('/api/openrouter', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                data: {
-                    model: 'google/gemini-2.0-pro-exp-02-05:free', // Using Gemini Pro model via OpenRouter
-                    messages: [
-                        {
-                            role: 'system',
-                            content: systemPrompts[currentMode]
-                        },
-                        {
-                            role: 'user',
-                            content: currentMode === 'einstein' ? enhancedMessage : message
-                        }
-                    ],
-                    max_tokens: 4096, // Increasing max tokens to handle longer responses
-                    temperature: 0.7,
-                    top_p: 0.9
-                },
-                referer: window.location.origin
+                model: 'google/gemini-2.0-pro-exp-02-05:free', // Using Gemini Pro model via OpenRouter
+                messages: [
+                    {
+                        role: 'system',
+                        content: systemPrompts[currentMode]
+                    },
+                    {
+                        role: 'user',
+                        content: currentMode === 'einstein' ? enhancedMessage : message
+                    }
+                ],
+                max_tokens: 4096, // Increasing max tokens to handle longer responses
+                temperature: 0.7,
+                top_p: 0.9
             })
         });
 
