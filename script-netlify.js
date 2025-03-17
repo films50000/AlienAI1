@@ -1,5 +1,59 @@
 // This is a modified version of the original script.js configured to work with Netlify serverless functions
 
+// Ensure the DOM is loaded before attaching event handlers
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded - initializing event handlers');
+    
+    // Get references to UI elements
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const chatMessages = document.getElementById('chat-messages');
+    
+    // Set up key press event for the input
+    userInput.addEventListener('keydown', (event) => {
+        console.log('Key pressed:', event.key);
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Prevent default behavior (new line)
+            handleSendMessage();
+        }
+    });
+    
+    // Set up click event for the send button
+    if (sendButton) {
+        console.log('Found send button, attaching click handler');
+        sendButton.addEventListener('click', () => {
+            console.log('Send button clicked');
+            handleSendMessage();
+        });
+    } else {
+        console.error('Send button not found!');
+    }
+    
+    // Function to handle sending messages
+    function handleSendMessage() {
+        const message = userInput.value.trim();
+        console.log('Attempting to send message:', message);
+        
+        if (message) {
+            // Add user message to chat
+            addMessage(message, 'user');
+            
+            // Clear input
+            userInput.value = '';
+            
+            // Process the message and get AI response
+            processUserMessage(message)
+                .then(response => {
+                    console.log('Received response from AI');
+                })
+                .catch(error => {
+                    console.error('Error getting response:', error);
+                    addMessage('Error connecting to the server. Please check your API key and internet connection.', 'ai');
+                });
+        }
+    }
+});
+
 // Replace the sendToOpenRouter function with this Netlify-compatible version
 async function sendToOpenRouter(message) {
     try {
@@ -116,3 +170,162 @@ async function sendToOpenRouter(message) {
 
 // The processAIResponse function is kept as is
 // function processAIResponse(text, mode) { ... } 
+
+// Add these essential functions if they're not already defined
+
+// Function to add a message to the chat
+function addMessage(text, sender) {
+    console.log(`Adding ${sender} message:`, text);
+    const messagesContainer = document.getElementById('chat-messages');
+    
+    if (!messagesContainer) {
+        console.error('Messages container not found!');
+        return;
+    }
+    
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', `${sender}-message`);
+    
+    // For AI messages, we'll add the complete class when typing is done
+    if (sender === 'ai') {
+        // Start typing effect for AI messages
+        messageElement.classList.add('ai-message');
+        messagesContainer.appendChild(messageElement);
+        typeMessageRealtime(text, sender);
+    } else {
+        // For user messages, just add the text
+        messageElement.textContent = text;
+        messagesContainer.appendChild(messageElement);
+        scrollToBottom();
+    }
+}
+
+// Simple typing effect for AI messages
+function typeMessageRealtime(text, sender) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageElement = messagesContainer.lastElementChild;
+    messageElement.textContent = ''; // Clear initial content
+    
+    // Process message with Markdown formatting
+    const formattedText = formatText(text);
+    messageElement.innerHTML = formattedText;
+    messageElement.classList.add('complete');
+    scrollToBottom();
+}
+
+// Function to format text with basic markdown
+function formatText(text) {
+    if (!text) return '';
+    
+    // Escape HTML to prevent injection
+    let safeText = escapeHtml(text);
+    
+    // Basic Markdown formatting
+    safeText = safeText
+        // Headers
+        .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+        .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+        .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+        // Bold
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        // Italic
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Code blocks with language
+        .replace(/```([a-z]*)\n([\s\S]*?)```/g, '<pre class="code-block" data-language="$1"><code>$2</code></pre>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // Lists
+        .replace(/^\- (.*?)$/gm, '<ul><li>$1</li></ul>')
+        // Fix adjacent list items
+        .replace(/<\/ul>\s*<ul>/g, '');
+    
+    // Convert line breaks
+    safeText = safeText.replace(/\n/g, '<br>');
+    
+    return safeText;
+}
+
+// Function to escape HTML
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Function to scroll to bottom of chat
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('chat-messages');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+// Main function to process user messages
+async function processUserMessage(message) {
+    // Check for mode switching commands
+    if (message.toLowerCase().startsWith('/einstein')) {
+        switchMode('einstein');
+        addMessage("Switched to Einstein mode.", 'ai');
+        return;
+    } else if (message.toLowerCase().startsWith('/alien')) {
+        switchMode('alien');
+        addMessage("ALIEN MODE ACTIVATED.", 'ai');
+        return;
+    } else if (message.toLowerCase().startsWith('/newton')) {
+        switchMode('newton');
+        addMessage("Switched to Newton mode.", 'ai');
+        return;
+    }
+    
+    try {
+        // Show typing indicator
+        const loadingMessage = document.createElement('div');
+        loadingMessage.className = 'typing-indicator';
+        loadingMessage.innerHTML = '<span></span><span></span><span></span>';
+        document.getElementById('chat-messages').appendChild(loadingMessage);
+        scrollToBottom();
+        
+        // Get response from AI
+        const response = await sendToOpenRouter(message);
+        
+        // Remove typing indicator
+        if (loadingMessage.parentNode) {
+            loadingMessage.parentNode.removeChild(loadingMessage);
+        }
+        
+        // Add AI response
+        addMessage(response, 'ai');
+        
+    } catch (error) {
+        console.error('Error processing message:', error);
+        
+        // Remove typing indicator if it exists
+        const typingIndicator = document.querySelector('.typing-indicator');
+        if (typingIndicator && typingIndicator.parentNode) {
+            typingIndicator.parentNode.removeChild(typingIndicator);
+        }
+        
+        // Add error message
+        addMessage('Error connecting to the server. Please check your API key and internet connection.', 'ai');
+    }
+}
+
+// Define the current mode variable
+let currentMode = 'alien'; // Default mode
+
+// Function to switch between modes
+function switchMode(mode) {
+    // Remove previous mode classes
+    document.body.classList.remove('alien-mode', 'einstein-mode', 'newton-mode');
+    
+    // Add new mode class
+    document.body.classList.add(`${mode}-mode`);
+    
+    // Update current mode
+    currentMode = mode;
+    
+    console.log(`Switched to ${mode} mode`);
+} 
