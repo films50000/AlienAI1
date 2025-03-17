@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Store the OpenRouter API key provided by the usersk-or
-    localStorage.setItem('openrouter_api_key', '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');
+    localStorage.setItem('openrouter_api_key', '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');
     
     // Add these styles back
     const style = document.createElement('style');

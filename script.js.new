@@ -1,0 +1,10 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // Store the OpenRouter API key provided by the usersk-or
+
+    
+    // Add these styles back
+    const style = document.createElement('style');
+    style.textContent = `
+        .ai-message:not(.complete) {
+            position: relative;
+        }

@@ -14,10 +14,15 @@ exports.handler = async function(event, context) {
     // Parse the request body
     const requestBody = JSON.parse(event.body);
     
-    // Hardcoded API key for testing
-    const apiKey = "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";
+    // Your OpenRouter API key - this will be stored as an environment variable in Netlify
+    const apiKey = process.env.OPENROUTER_API_KEY;
     
-    console.log("Using direct API key for testing");
+    if (!apiKey) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'API key not configured' })
+      };
+    }
     
     // Make the request to OpenRouter
     const response = await axios({
@@ -26,7 +31,6 @@ exports.handler = async function(event, context) {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://alienai.netlify.app',
         'X-Title': 'ALIEN CODE INTERFACE BY ALI FROM XENO-7'
       },
       data: requestBody
